@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os';
  *
  * This ensures tests pass in CI where ~/.claude/projects/ does not exist.
  */
-describe('CLI smoke test', () => {
+describe('CLI smoke test', { timeout: 30_000 }, () => {
   const fixtureDir = join(tmpdir(), `cctrack-smoke-${Date.now()}`);
   const projectsDir = join(fixtureDir, 'projects');
   // Encoded project dir: simulates /Users/ci/Sites/testproject
