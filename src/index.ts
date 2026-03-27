@@ -19,18 +19,18 @@ initPricing().catch(() => {});
 const program = new Command();
 
 program
-  .name('cctrack')
+  .name('cctrackr')
   .description('Claude Code usage analytics — accurate metrics and a beautiful HTML dashboard')
-  .version('0.1.0')
+  .version('0.1.1')
   .addHelpText('after', `
 Examples:
-  cctrack                                     Open interactive HTML dashboard
-  cctrack daily --since YYYY-MM-DD            Daily cost breakdown from a date
-  cctrack blocks                              5-hour rolling window usage
-  cctrack roi --plan max20                    ROI analysis vs Max 20 plan
-  cctrack live                                Real-time terminal monitor
-  cctrack statusline                          Compact status for tmux/editors
-  cctrack config set budget.daily 50          Set daily budget alert at $50
+  cctrackr                                    Open interactive HTML dashboard
+  cctrackr daily --since YYYY-MM-DD           Daily cost breakdown from a date
+  cctrackr blocks                             5-hour rolling window usage
+  cctrackr roi --plan max20                   ROI analysis vs Max 20 plan
+  cctrackr live                               Real-time terminal monitor
+  cctrackr statusline                         Compact status for tmux/editors
+  cctrackr config set budget.daily 50         Set daily budget alert at $50
 `);
 
 registerDailyCommand(program);

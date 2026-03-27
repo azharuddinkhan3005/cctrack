@@ -50,13 +50,17 @@ function writeCache(data: PricingData): void {
 
 function loadBundled(): PricingData {
   const __dirname = dirname(fileURLToPath(import.meta.url));
-  const pricingPath = join(__dirname, '..', '..', 'pricing', 'models.json');
-  try {
-    return JSON.parse(readFileSync(pricingPath, 'utf-8')) as PricingData;
-  } catch {
-    const fallbackPath = join(process.cwd(), 'pricing', 'models.json');
-    return JSON.parse(readFileSync(fallbackPath, 'utf-8')) as PricingData;
+  // Try multiple paths: from src/core/ (dev) and from dist/ (production)
+  const candidates = [
+    join(__dirname, '..', '..', 'pricing', 'models.json'),  // src/core/ → ../../pricing
+    join(__dirname, '..', 'pricing', 'models.json'),         // dist/ → ../pricing
+  ];
+  for (const p of candidates) {
+    try {
+      return JSON.parse(readFileSync(p, 'utf-8')) as PricingData;
+    } catch { /* try next */ }
   }
+  throw new Error('Could not find bundled pricing/models.json');
 }
 
 /**

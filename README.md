@@ -11,7 +11,7 @@ Know exactly what Claude Code costs you. Accurate token tracking, cost breakdown
 cctrack reads Claude Code's local usage logs and turns them into actionable analytics. It deduplicates requests, applies Anthropic's tiered pricing, and gives you cost breakdowns by day, session, project, and model -- in the terminal or as an interactive HTML dashboard.
 
 <p align="center">
-  <img src="assets/dashboard-hero.png" alt="cctrack dashboard overview" width="100%">
+  <img src="assets/dashboard-hero.png" alt="cctrackr dashboard overview" width="100%">
 </p>
 
 ## Features
@@ -112,87 +112,87 @@ Compares your projected monthly cost against Pro, Max 5x, and Max 20x subscripti
 
 | Command | Description |
 |---|---|
-| `cctrack` | Open interactive HTML dashboard (default) |
-| `cctrack daily` | Daily usage breakdown with cost sparklines |
-| `cctrack monthly` | Monthly aggregated view |
-| `cctrack session` | Per-session breakdown with project and model |
-| `cctrack blocks` | Usage grouped by 5-hour windows |
-| `cctrack roi` | ROI analysis vs subscription plans |
-| `cctrack live` | Real-time terminal monitor with burn rate |
-| `cctrack statusline` | Compact one-line output for tmux/editors |
-| `cctrack limits` | Rate limit analysis (billable token tracking) |
-| `cctrack export csv` | Export per-request data as CSV |
-| `cctrack export json` | Export structured JSON |
-| `cctrack pricing list` | View all model prices |
-| `cctrack config` | Manage budgets and settings |
+| `cctrackr` | Open interactive HTML dashboard (default) |
+| `cctrackrdaily` | Daily usage breakdown with cost sparklines |
+| `cctrackrmonthly` | Monthly aggregated view |
+| `cctrackrsession` | Per-session breakdown with project and model |
+| `cctrackrblocks` | Usage grouped by 5-hour windows |
+| `cctrackrroi` | ROI analysis vs subscription plans |
+| `cctrackrlive` | Real-time terminal monitor with burn rate |
+| `cctrackrstatusline` | Compact one-line output for tmux/editors |
+| `cctrackrlimits` | Rate limit analysis (billable token tracking) |
+| `cctrackrexport csv` | Export per-request data as CSV |
+| `cctrackrexport json` | Export structured JSON |
+| `cctrackrpricing list` | View all model prices |
+| `cctrackrconfig` | Manage budgets and settings |
 
 ## Command Details
 
-### `cctrack dashboard`
+### `cctrackrdashboard`
 
 Opens an interactive HTML dashboard in your browser. The HTML file is self-contained -- no server needed. You can save it, share it, or archive it.
 
 ```bash
-cctrack dashboard                        # Open in browser
-cctrack dashboard --save report.html     # Save to file without opening
-cctrack dashboard --json                 # Output raw dashboard data as JSON
-cctrack dashboard --project my-app       # Pre-filter to a specific project
-cctrack dashboard --since 2026-03-01     # Filter from a date
+cctrackr dashboard                        # Open in browser
+cctrackr dashboard --save report.html     # Save to file without opening
+cctrackr dashboard --json                 # Output raw dashboard data as JSON
+cctrackr dashboard --project my-app       # Pre-filter to a specific project
+cctrackr dashboard --since 2026-03-01     # Filter from a date
 ```
 
-### `cctrack roi`
+### `cctrackrroi`
 
 Compares your actual API-equivalent cost against subscription plans. Supports fuzzy plan names:
 
 ```bash
-cctrack roi                    # Default: compare against all plans
-cctrack roi --plan pro         # Compare against Pro ($20/mo)
-cctrack roi --plan max5        # Compare against Max 5x ($100/mo)
-cctrack roi --plan 200         # Fuzzy: "200" resolves to Max 20x
-cctrack roi --plan max         # Fuzzy: "max" resolves to Max 5x
-cctrack roi --json             # Machine-readable output
+cctrackr roi                    # Default: compare against all plans
+cctrackr roi --plan pro         # Compare against Pro ($20/mo)
+cctrackr roi --plan max5        # Compare against Max 5x ($100/mo)
+cctrackr roi --plan 200         # Fuzzy: "200" resolves to Max 20x
+cctrackr roi --plan max         # Fuzzy: "max" resolves to Max 5x
+cctrackr roi --json             # Machine-readable output
 ```
 
-### `cctrack live`
+### `cctrackrlive`
 
 Real-time terminal monitor that refreshes every few seconds. Shows today's cost, burn rate, and budget status. Press Ctrl+C to exit.
 
 ```bash
-cctrack live                       # Default refresh every 5 seconds
-cctrack live --interval 10         # Refresh every 10 seconds
-cctrack live --project my-app      # Monitor a specific project
-cctrack live --mode display        # Use Claude Code's cost estimates
+cctrackr live                       # Default refresh every 5 seconds
+cctrackr live --interval 10         # Refresh every 10 seconds
+cctrackr live --project my-app      # Monitor a specific project
+cctrackr live --mode display        # Use Claude Code's cost estimates
 ```
 
-### `cctrack blocks`
+### `cctrackrblocks`
 
 Groups usage into 5-hour time windows to reveal consumption patterns. Also displays weekly rate limit windows and extra usage credit data when available (from statusline hook).
 
 ```bash
-cctrack blocks                       # Current window and recent history
-cctrack blocks --json                # Machine-readable output
-cctrack blocks --live                # Auto-refresh every 5 seconds
-cctrack blocks --since 2026-03-25    # Filter by date range
+cctrackr blocks                       # Current window and recent history
+cctrackr blocks --json                # Machine-readable output
+cctrackr blocks --live                # Auto-refresh every 5 seconds
+cctrackr blocks --since 2026-03-25    # Filter by date range
 ```
 
-### `cctrack limits`
+### `cctrackrlimits`
 
 Analyzes rate limit consumption using billable tokens only (input + cache_creation, excluding cache_read).
 
 ```bash
-cctrack limits                 # Terminal summary
-cctrack limits --json          # Detailed JSON with prediction model
+cctrackr limits                 # Terminal summary
+cctrackr limits --json          # Detailed JSON with prediction model
 ```
 
-### `cctrack statusline`
+### `cctrackrstatusline`
 
 Designed to be piped into tmux or editor status bars. Ultra-fast with a 30-second cache for repeated calls.
 
 ```bash
-cctrack statusline                                 # One-line summary
-cctrack statusline --json                          # Structured JSON for scripts
-cctrack statusline --format '{cost} | {model}'     # Custom format
-cctrack statusline --no-cache                      # Force fresh parse
+cctrackr statusline                                 # One-line summary
+cctrackr statusline --json                          # Structured JSON for scripts
+cctrackr statusline --format '{cost} | {model}'     # Custom format
+cctrackr statusline --no-cache                      # Force fresh parse
 ```
 
 **Custom format placeholders:** `{cost}`, `{model}`, `{tokens}`, `{block_pct}`, `{block_remaining}`
@@ -201,22 +201,22 @@ To use as a Claude Code statusline hook (receives real rate limit data from stdi
 
 ```json
 {
-  "statusline": "cctrack statusline"
+  "statusline": "cctrackr statusline"
 }
 ```
 
 When configured as a hook, cctrack receives rate limit data (`used_percentage`, `resets_at`, weekly windows, extra usage credits) directly from Claude Code's stdin. This data is persisted to `~/.cctrack/ratelimits.json` and shared with `blocks` and `live` commands.
 
-### `cctrack export`
+### `cctrackrexport`
 
 Export raw per-request data for external analysis:
 
 ```bash
-cctrack export csv                           # CSV to stdout
-cctrack export csv > usage.csv               # Save to file
-cctrack export json                          # Full dashboard JSON
-cctrack export csv --since 2026-03-01        # Date-filtered export
-cctrack export csv --project my-app          # Project-filtered export
+cctrackr export csv                           # CSV to stdout
+cctrackr export csv > usage.csv               # Save to file
+cctrackr export json                          # Full dashboard JSON
+cctrackr export csv --since 2026-03-01        # Date-filtered export
+cctrackr export csv --project my-app          # Project-filtered export
 ```
 
 ### Cost Modes
@@ -230,8 +230,8 @@ The `--mode` flag controls how costs are calculated:
 | `compare` | Shows both calculated and display costs side by side |
 
 ```bash
-cctrack daily --mode display    # Use Claude Code's cost estimates
-cctrack daily --mode compare    # Compare both methods
+cctrackr daily --mode display    # Use Claude Code's cost estimates
+cctrackr daily --mode compare    # Compare both methods
 ```
 
 ## Terminal Output Examples
@@ -239,7 +239,7 @@ cctrack daily --mode compare    # Compare both methods
 **Daily breakdown:**
 
 ```
-$ cctrack daily
+$ cctrackr daily
 
 ┌────────────┬────────┬────────┬─────────────┬────────────┬────────┬──────────────────┐
 │ Date       │  Input │ Output │ Cache Write │ Cache Read │  Total │             Cost │
@@ -256,7 +256,7 @@ Burn rate: $3.14/hr, $75.38/day → projected $2261.25/month
 **Session view:**
 
 ```
-$ cctrack session
+$ cctrackr session
 
 ┌─────────────────┬─────────────┬─────────────┬──────────┬──────────┬────────┬─────────┐
 │ Session ID      │ Project     │ Model       │ Duration │ Requests │ Tokens │    Cost │
@@ -270,14 +270,14 @@ $ cctrack session
 **Statusline (for tmux or editor status bars):**
 
 ```
-$ cctrack statusline
+$ cctrackr statusline
 $58.30 today │ opus-4.6 │ 99.9M tok │ █████░░░ 52% 5h (2h 15m)
 ```
 
 **ROI analysis:**
 
 ```
-$ cctrack roi --plan max5
+$ cctrackr roi --plan max5
 
 ROI Analysis (max5 plan)
 ────────────────────────
@@ -291,7 +291,7 @@ Projected monthly: $2261.25
 **Blocks view:**
 
 ```
-$ cctrack blocks
+$ cctrackr blocks
 
 ┌───────────────────┬──────────┬──────────┬────────┐
 │ Window            │ Requests │   Tokens │   Cost │
@@ -333,8 +333,8 @@ $ cctrack blocks
 Set daily or monthly spending budgets:
 
 ```bash
-cctrack config set budget.daily 100
-cctrack config set budget.monthly 2000
+cctrackr config set budget.daily 100
+cctrackr config set budget.monthly 2000
 ```
 
 The `daily` and `live` commands show a color-coded progress bar:
@@ -355,10 +355,10 @@ Daily Budget: ████████████░░░░░░░░ 62% (
 cctrack maintains accurate per-token pricing for all 14 Anthropic models:
 
 ```bash
-cctrack pricing list           # View all model prices
-cctrack pricing status         # Check pricing source and freshness
-cctrack pricing update         # Force-fetch latest prices from Anthropic
-cctrack pricing list --json    # Machine-readable pricing data
+cctrackr pricing list           # View all model prices
+cctrackr pricing status         # Check pricing source and freshness
+cctrackr pricing update         # Force-fetch latest prices from Anthropic
+cctrackr pricing list --json    # Machine-readable pricing data
 ```
 
 Pricing works in two tiers:
@@ -388,11 +388,11 @@ Anthropic does not count `cache_read` tokens toward rate limits -- only `input` 
 
 ### Statusline data depends on your setup
 
-`cctrack statusline` is designed to be used as a Claude Code statusline hook (configured via `.claude/settings.json`). When configured this way, it receives real rate limit data (`used_percentage`, `resets_at`) directly from Claude Code's stdin on every assistant message. **If you run `cctrack statusline` manually from a terminal, this real-time rate limit data is not available** -- you will only see cost and token data derived from JSONL logs.
+`cctrackrstatusline` is designed to be used as a Claude Code statusline hook (configured via `.claude/settings.json`). When configured this way, it receives real rate limit data (`used_percentage`, `resets_at`) directly from Claude Code's stdin on every assistant message. **If you run `cctrackrstatusline` manually from a terminal, this real-time rate limit data is not available** -- you will only see cost and token data derived from JSONL logs.
 
 ### Blocks are approximations, not Anthropic's actual windows
 
-`cctrack blocks` groups your usage into 5-hour windows to help you see usage patterns. These windows are based on your local timestamps and do not correspond to Anthropic's internal rate limit windows. Anthropic's rate limiting involves multiple overlapping systems that are not publicly documented and cannot be reconstructed from JSONL data alone.
+`cctrackrblocks` groups your usage into 5-hour windows to help you see usage patterns. These windows are based on your local timestamps and do not correspond to Anthropic's internal rate limit windows. Anthropic's rate limiting involves multiple overlapping systems that are not publicly documented and cannot be reconstructed from JSONL data alone.
 
 ### Rate limit prediction is uncalibrated
 
@@ -414,11 +414,11 @@ cctrack uses Anthropic's publicly listed per-token prices. Your actual bill may 
 Config is stored at `~/.cctrack/config.json`:
 
 ```bash
-cctrack config set budget.daily 100     # Daily budget in $
-cctrack config set budget.monthly 2000  # Monthly budget in $
-cctrack config set budget.block 50      # Per 5-hour block budget in $
-cctrack config get                      # View current config
-cctrack config reset                    # Reset to defaults
+cctrackr config set budget.daily 100     # Daily budget in $
+cctrackr config set budget.monthly 2000  # Monthly budget in $
+cctrackr config set budget.block 50      # Per 5-hour block budget in $
+cctrackr config get                      # View current config
+cctrackr config reset                    # Reset to defaults
 ```
 
 **Environment variables:**
