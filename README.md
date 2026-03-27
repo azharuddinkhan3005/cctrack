@@ -11,7 +11,7 @@ Know exactly what Claude Code costs you. Accurate token tracking, cost breakdown
 cctrack reads Claude Code's local usage logs and turns them into actionable analytics. It deduplicates requests, applies Anthropic's tiered pricing, and gives you cost breakdowns by day, session, project, and model -- in the terminal or as an interactive HTML dashboard.
 
 <p align="center">
-  <img src="assets/dashboard-hero.png" alt="cctrackr dashboard overview" width="100%">
+  <img src="assets/dashboard-hero.png" alt="cctrack dashboard overview" width="100%">
 </p>
 
 ## Features
@@ -113,22 +113,22 @@ Compares your projected monthly cost against Pro, Max 5x, and Max 20x subscripti
 | Command | Description |
 |---|---|
 | `cctrackr` | Open interactive HTML dashboard (default) |
-| `cctrackrdaily` | Daily usage breakdown with cost sparklines |
-| `cctrackrmonthly` | Monthly aggregated view |
-| `cctrackrsession` | Per-session breakdown with project and model |
-| `cctrackrblocks` | Usage grouped by 5-hour windows |
-| `cctrackrroi` | ROI analysis vs subscription plans |
-| `cctrackrlive` | Real-time terminal monitor with burn rate |
-| `cctrackrstatusline` | Compact one-line output for tmux/editors |
-| `cctrackrlimits` | Rate limit analysis (billable token tracking) |
-| `cctrackrexport csv` | Export per-request data as CSV |
-| `cctrackrexport json` | Export structured JSON |
-| `cctrackrpricing list` | View all model prices |
-| `cctrackrconfig` | Manage budgets and settings |
+| `cctrackr daily` | Daily usage breakdown with cost sparklines |
+| `cctrackr monthly` | Monthly aggregated view |
+| `cctrackr session` | Per-session breakdown with project and model |
+| `cctrackr blocks` | Usage grouped by 5-hour windows |
+| `cctrackr roi` | ROI analysis vs subscription plans |
+| `cctrackr live` | Real-time terminal monitor with burn rate |
+| `cctrackr statusline` | Compact one-line output for tmux/editors |
+| `cctrackr limits` | Rate limit analysis (billable token tracking) |
+| `cctrackr export csv` | Export per-request data as CSV |
+| `cctrackr export json` | Export structured JSON |
+| `cctrackr pricing list` | View all model prices |
+| `cctrackr config` | Manage budgets and settings |
 
 ## Command Details
 
-### `cctrackrdashboard`
+### `cctrackr dashboard`
 
 Opens an interactive HTML dashboard in your browser. The HTML file is self-contained -- no server needed. You can save it, share it, or archive it.
 
@@ -140,7 +140,7 @@ cctrackr dashboard --project my-app       # Pre-filter to a specific project
 cctrackr dashboard --since 2026-03-01     # Filter from a date
 ```
 
-### `cctrackrroi`
+### `cctrackr roi`
 
 Compares your actual API-equivalent cost against subscription plans. Supports fuzzy plan names:
 
@@ -153,7 +153,7 @@ cctrackr roi --plan max         # Fuzzy: "max" resolves to Max 5x
 cctrackr roi --json             # Machine-readable output
 ```
 
-### `cctrackrlive`
+### `cctrackr live`
 
 Real-time terminal monitor that refreshes every few seconds. Shows today's cost, burn rate, and budget status. Press Ctrl+C to exit.
 
@@ -164,7 +164,7 @@ cctrackr live --project my-app      # Monitor a specific project
 cctrackr live --mode display        # Use Claude Code's cost estimates
 ```
 
-### `cctrackrblocks`
+### `cctrackr blocks`
 
 Groups usage into 5-hour time windows to reveal consumption patterns. Also displays weekly rate limit windows and extra usage credit data when available (from statusline hook).
 
@@ -175,7 +175,7 @@ cctrackr blocks --live                # Auto-refresh every 5 seconds
 cctrackr blocks --since 2026-03-25    # Filter by date range
 ```
 
-### `cctrackrlimits`
+### `cctrackr limits`
 
 Analyzes rate limit consumption using billable tokens only (input + cache_creation, excluding cache_read).
 
@@ -184,7 +184,7 @@ cctrackr limits                 # Terminal summary
 cctrackr limits --json          # Detailed JSON with prediction model
 ```
 
-### `cctrackrstatusline`
+### `cctrackr statusline`
 
 Designed to be piped into tmux or editor status bars. Ultra-fast with a 30-second cache for repeated calls.
 
@@ -207,7 +207,7 @@ To use as a Claude Code statusline hook (receives real rate limit data from stdi
 
 When configured as a hook, cctrack receives rate limit data (`used_percentage`, `resets_at`, weekly windows, extra usage credits) directly from Claude Code's stdin. This data is persisted to `~/.cctrack/ratelimits.json` and shared with `blocks` and `live` commands.
 
-### `cctrackrexport`
+### `cctrackr export`
 
 Export raw per-request data for external analysis:
 
@@ -388,11 +388,11 @@ Anthropic does not count `cache_read` tokens toward rate limits -- only `input` 
 
 ### Statusline data depends on your setup
 
-`cctrackrstatusline` is designed to be used as a Claude Code statusline hook (configured via `.claude/settings.json`). When configured this way, it receives real rate limit data (`used_percentage`, `resets_at`) directly from Claude Code's stdin on every assistant message. **If you run `cctrackrstatusline` manually from a terminal, this real-time rate limit data is not available** -- you will only see cost and token data derived from JSONL logs.
+`cctrackr statusline` is designed to be used as a Claude Code statusline hook (configured via `.claude/settings.json`). When configured this way, it receives real rate limit data (`used_percentage`, `resets_at`) directly from Claude Code's stdin on every assistant message. **If you run `cctrackr statusline` manually from a terminal, this real-time rate limit data is not available** -- you will only see cost and token data derived from JSONL logs.
 
 ### Blocks are approximations, not Anthropic's actual windows
 
-`cctrackrblocks` groups your usage into 5-hour windows to help you see usage patterns. These windows are based on your local timestamps and do not correspond to Anthropic's internal rate limit windows. Anthropic's rate limiting involves multiple overlapping systems that are not publicly documented and cannot be reconstructed from JSONL data alone.
+`cctrackr blocks` groups your usage into 5-hour windows to help you see usage patterns. These windows are based on your local timestamps and do not correspond to Anthropic's internal rate limit windows. Anthropic's rate limiting involves multiple overlapping systems that are not publicly documented and cannot be reconstructed from JSONL data alone.
 
 ### Rate limit prediction is uncalibrated
 
