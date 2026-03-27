@@ -6,8 +6,6 @@
 
 Claude Code usage analytics — accurate cost tracking and a beautiful interactive dashboard from your local JSONL files.
 
-### Dashboard
-
 <p align="center">
   <img src="assets/dashboard-dark.png" alt="cctrack dashboard — dark mode" width="100%">
 </p>
@@ -112,21 +110,7 @@ Most commands support these flags:
 
 ## Dashboard
 
-![cctrack dashboard](screenshots/dashboard.png)
-
-The dashboard is a self-contained HTML file with interactive ECharts charts:
-
-- Cost over time (bar + cumulative line)
-- Input/Output token breakdown
-- Cache token breakdown
-- Project breakdown
-- Model distribution
-- Cache reuse efficiency
-- Usage heatmap (day of week × hour)
-- Session table (sortable)
-- ROI analysis
-
-Filter by date range and project — all panels update together.
+Self-contained HTML file with 12 interactive ECharts panels — cost trends, token breakdown, cache efficiency, project/model distribution, usage heatmap, session table, and ROI analysis. Filter by date range and project — all panels update together.
 
 ```bash
 cctrack dashboard              # Open in browser
@@ -187,7 +171,7 @@ git clone https://github.com/azharuddinkhan3005/cctrack.git
 cd cctrack
 pnpm install
 pnpm build
-pnpm test           # 233 unit tests
+pnpm test           # 280 unit tests
 pnpm test:e2e       # 14 browser tests
 node dist/index.js daily
 ```
