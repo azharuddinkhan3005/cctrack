@@ -22,5 +22,5 @@ Thumbs.db
 # Build artifacts
 pnpm-build-allow.yaml
 
-# Internal docs (plans, roadmaps, original prompts)
-docs/
+# Internal files (plans, roadmaps, screenshots, original prompts)
+.internal/

@@ -31,54 +31,60 @@ function generateHtml(data: DashboardData): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CCTrack Dashboard</title>
+<!-- Apache ECharts: Apache License 2.0 - https://echarts.apache.org -->
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"><\/script>
 <script>var DATA = JSON.parse(${safeJson});<\/script>
 <style>
 :root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#22c55e;--red:#ef4444;--yellow:#eab308;--cyan:#06b6d4;--blue:#3b82f6;--hm0:#1e293b;--hm1:#2d3a4a;--hm2:#365314;--hm3:#4d7c0f;--hm4:#ca8a04;--hm5:#dc2626}
 .light{--bg:#f8fafc;--card:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;--hm0:#f1f5f9;--hm1:#d9f99d;--hm2:#84cc16;--hm3:#ca8a04;--hm4:#ea580c;--hm5:#dc2626}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:24px;min-height:100vh}
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+body{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:24px;min-height:100vh;max-width:100vw;overflow-x:hidden}
+.header{margin-bottom:20px;padding-right:50px}
 .header h1{font-size:1.4rem;font-weight:700}.header .sub{color:var(--muted);font-size:.8rem;margin-top:2px}
-.toggle{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--text);font-size:1rem}
+.toggle{position:fixed;top:24px;right:24px;z-index:200;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--text);font-size:1rem;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .filters{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
-.filters label{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
-.filters input,.filters select{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:.85rem}
+.filter-group{display:flex;align-items:center;gap:6px}
+.filters label{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;white-space:nowrap}
+.filters input,.filters select{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:.85rem;max-width:100%}
 .filters select{min-width:140px}
+.filter-actions{display:flex;gap:8px}
 .btn{padding:6px 16px;border-radius:6px;border:none;cursor:pointer;font-size:.85rem;font-weight:600}
 .btn-apply{background:var(--accent);color:#fff}.btn-reset{background:var(--card);color:var(--text);border:1px solid var(--border)}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;min-width:0;overflow:hidden}
 .stat-label{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
 .stat-value{font-size:1.6rem;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
 .stat-value.green{color:var(--green)}
 .grid{display:grid;gap:16px;margin-bottom:16px}
 .grid-1{grid-template-columns:1fr}.grid-2{grid-template-columns:1fr 1fr}
 .grid-2-1{grid-template-columns:2fr 1fr}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;min-width:0}
 .panel-title{font-size:.85rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
 .panel-title::before{content:'';width:8px;height:8px;border-radius:50%;display:inline-block}
 .pt-blue::before{background:var(--blue)}.pt-yellow::before{background:var(--yellow)}.pt-green::before{background:var(--green)}.pt-accent::before{background:var(--accent)}.pt-cyan::before{background:var(--cyan)}.pt-red::before{background:var(--red)}
 .chart-container{height:320px;width:100%}
 .chart-sm{height:260px}
 .chart-tall{min-height:300px}
-.heatmap{display:grid;grid-template-columns:40px repeat(24,1fr);gap:3px;font-size:.7rem;padding:8px 0}
+.heatmap-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.heatmap{display:grid;grid-template-columns:40px repeat(24,1fr);gap:3px;font-size:.7rem;padding:8px 0;min-width:600px}
 .hm-label{color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-weight:600}
 .hm-cell{aspect-ratio:1;border-radius:3px;min-width:16px;min-height:16px;position:relative;cursor:default}
 .hm-cell:hover .hm-tip{display:block}
 .hm-tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:.7rem;white-space:nowrap;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.3)}
-.tbl-wrap{max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px}
+.tbl-wrap{max-height:400px;overflow:auto;border:1px solid var(--border);border-radius:8px}
 table{width:100%;border-collapse:collapse}
 th{position:sticky;top:0;background:var(--card);text-align:left;padding:10px 12px;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;font-weight:600}
 th:hover{color:var(--text)}
 td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-variant-numeric:tabular-nums}
 .text-right{text-align:right}.text-mono{font-family:ui-monospace,monospace;font-size:.75rem}
 .roi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-.roi-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center}
+.roi-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;min-width:0}
 .roi-label{color:var(--muted);font-size:.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
 .roi-value{font-size:1.3rem;font-weight:700;margin-top:4px}.roi-sub{color:var(--muted);font-size:.7rem;margin-top:2px}
 .footer{text-align:center;color:var(--muted);font-size:.7rem;margin-top:24px;padding-top:16px;border-top:1px solid var(--border)}
-@media(max-width:768px){.stats,.roi-grid{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-2-1{grid-template-columns:1fr}.filters{flex-direction:column;align-items:stretch}}
+@media(max-width:1024px){.grid-2-1{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){.stats{grid-template-columns:repeat(2,1fr)}.roi-grid{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-2-1{grid-template-columns:1fr}.filters{flex-direction:column;align-items:stretch}.filter-group{flex-direction:column;align-items:stretch}.filter-group label{margin-bottom:2px}.filters select,.filters input{min-width:0;width:100%}.filter-actions{justify-content:stretch}.filter-actions .btn{flex:1}.header h1{font-size:1.2rem}.toggle{top:16px;right:16px}.stat-value{font-size:1.3rem}.chart-container{height:280px}.chart-sm{height:240px}body{padding:16px}}
+@media(max-width:480px){.stats{grid-template-columns:1fr}.roi-grid{grid-template-columns:repeat(2,1fr)}.stat{padding:12px 16px}.stat-value{font-size:1.1rem}.roi-value{font-size:1rem}.chart-container{height:240px}.chart-sm{height:200px}.toggle{top:10px;right:10px}body{padding:10px}.grid{gap:10px}.panel{padding:10px}.panel-title{font-size:.8rem;margin-bottom:8px}.filters label{font-size:.7rem}.filters input,.filters select{font-size:.8rem;padding:5px 8px}.footer{font-size:.65rem}}
 @media print{body{background:#fff;color:#000}.panel,.stat,.roi-card{border-color:#ddd;break-inside:avoid}.filters,.toggle{display:none!important}.chart-print-img{width:100%;height:auto}}
 </style>
 </head>
@@ -89,12 +95,10 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
 </div>
 
 <div class="filters">
-  <label>From</label><input type="date" id="dateStart" value="${esc(dateStart)}">
-  <label>To</label><input type="date" id="dateEnd" value="${esc(dateEnd)}">
-  <label>Project</label>
-  <select id="projectFilter"><option value="">All Projects</option>${projectOptions}</select>
-  <button class="btn btn-apply" id="btnApply">Apply</button>
-  <button class="btn btn-reset" id="btnReset">Reset</button>
+  <div class="filter-group"><label>From</label><input type="date" id="dateStart" value="${esc(dateStart)}"></div>
+  <div class="filter-group"><label>To</label><input type="date" id="dateEnd" value="${esc(dateEnd)}"></div>
+  <div class="filter-group"><label>Project</label><select id="projectFilter"><option value="">All Projects</option>${projectOptions}</select></div>
+  <div class="filter-actions"><button class="btn btn-apply" id="btnApply">Apply</button><button class="btn btn-reset" id="btnReset">Reset</button></div>
 </div>
 
 <div class="stats">
@@ -118,7 +122,7 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
 <div class="grid grid-1"><div class="panel">
   <div class="panel-title pt-blue">Usage Heatmap</div>
   <div style="color:var(--muted);font-size:.75rem;margin-bottom:10px" id="heatmapDesc">When do you use Claude the most? Each cell shows total tokens processed at that day-of-week + hour, aggregated across all dates in the range.</div>
-  <div id="heatmap" class="heatmap"></div>
+  <div class="heatmap-wrap"><div id="heatmap" class="heatmap"></div></div>
   <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.7rem;color:var(--muted)">
     <span>Less</span>
     <span style="width:14px;height:14px;border-radius:2px;background:var(--hm0)"></span>
@@ -208,11 +212,11 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
         p.forEach(function(i){h+='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+i.color+';margin-right:6px"></span>'+i.seriesName+': <b>'+fmtCost(i.value)+'</b><br>';});
         return h;
       }}),
-      grid:{left:60,right:60,top:40,bottom:30},
-      xAxis:{type:'category',data:labels,axisLabel:{color:textColor(),rotate:labels.length>10?30:0},axisLine:{lineStyle:{color:gridColor()}}},
+      grid:{left:'3%',right:'3%',top:35,bottom:15,containLabel:true},
+      xAxis:{type:'category',data:labels,axisLabel:{color:textColor(),rotate:labels.length>7?45:0,hideOverlap:true},axisLine:{lineStyle:{color:gridColor()}}},
       yAxis:[
-        {type:'value',name:'Daily ($)',nameTextStyle:{color:textColor()},axisLabel:{formatter:function(v){return fmtCost(v);},color:textColor()},splitLine:{lineStyle:{color:gridColor()}}},
-        {type:'value',name:'Cumulative ($)',nameTextStyle:{color:textColor()},axisLabel:{formatter:function(v){return fmtCost(v);},color:textColor()},splitLine:{show:false}}
+        {type:'value',name:'Daily ($)',nameTextStyle:{color:textColor(),padding:[0,0,0,40]},axisLabel:{formatter:function(v){return fmtCost(v);},color:textColor()},splitLine:{lineStyle:{color:gridColor()}}},
+        {type:'value',name:'Cumulative ($)',nameTextStyle:{color:textColor(),padding:[0,40,0,0]},axisLabel:{formatter:function(v){return fmtCost(v);},color:textColor()},splitLine:{show:false}}
       ],
       series:[
         {name:'Daily Cost',type:'bar',data:costs,barMaxWidth:50,itemStyle:{color:'#6366f1',borderRadius:[4,4,0,0]},emphasis:{itemStyle:{color:'#818cf8'}}},
@@ -229,9 +233,9 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
         p.forEach(function(i){h+='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+i.color+';margin-right:6px"></span>'+i.seriesName+': <b>'+fmt(i.value)+'</b><br>';});
         return h;
       }}),
-      grid:{left:60,right:20,top:40,bottom:30},
-      xAxis:{type:'category',data:labels,axisLabel:{color:textColor(),rotate:labels.length>10?30:0},axisLine:{lineStyle:{color:gridColor()}}},
-      yAxis:{type:'value',name:'Tokens',nameTextStyle:{color:textColor()},axisLabel:{formatter:function(v){return fmt(v);},color:textColor()},splitLine:{lineStyle:{color:gridColor()}}},
+      grid:{left:'3%',right:'3%',top:35,bottom:15,containLabel:true},
+      xAxis:{type:'category',data:labels,axisLabel:{color:textColor(),rotate:labels.length>7?45:0,hideOverlap:true},axisLine:{lineStyle:{color:gridColor()}}},
+      yAxis:{type:'value',name:'Tokens',nameTextStyle:{color:textColor(),padding:[0,0,0,30]},axisLabel:{formatter:function(v){return fmt(v);},color:textColor()},splitLine:{lineStyle:{color:gridColor()}}},
       series:[
         {name:'Input',type:'bar',stack:'io',data:daily.map(function(d){return d.tokens?d.tokens.input_tokens:d.input||0;}),barMaxWidth:50,itemStyle:{color:'#3b82f6'}},
         {name:'Output',type:'bar',stack:'io',data:daily.map(function(d){return d.tokens?d.tokens.output_tokens:d.output||0;}),barMaxWidth:50,itemStyle:{color:'#06b6d4'}}
@@ -247,9 +251,9 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
         p.forEach(function(i){h+='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+i.color+';margin-right:6px"></span>'+i.seriesName+': <b>'+fmt(i.value)+'</b><br>';});
         return h;
       }}),
-      grid:{left:70,right:20,top:40,bottom:30},
-      xAxis:{type:'category',data:labels,axisLabel:{color:textColor(),rotate:labels.length>10?30:0},axisLine:{lineStyle:{color:gridColor()}}},
-      yAxis:{type:'value',name:'Cache Tokens',nameTextStyle:{color:textColor()},axisLabel:{formatter:function(v){return fmt(v);},color:textColor()},splitLine:{lineStyle:{color:gridColor()}}},
+      grid:{left:'3%',right:'3%',top:35,bottom:15,containLabel:true},
+      xAxis:{type:'category',data:labels,axisLabel:{color:textColor(),rotate:labels.length>7?45:0,hideOverlap:true},axisLine:{lineStyle:{color:gridColor()}}},
+      yAxis:{type:'value',name:'Cache Tokens',nameTextStyle:{color:textColor(),padding:[0,0,0,30]},axisLabel:{formatter:function(v){return fmt(v);},color:textColor()},splitLine:{lineStyle:{color:gridColor()}}},
       series:[
         {name:'Cache Write',type:'bar',stack:'cache',data:daily.map(function(d){return d.tokens?d.tokens.cache_write_tokens:d.cw||0;}),barMaxWidth:50,itemStyle:{color:'#eab308'}},
         {name:'Cache Read',type:'bar',stack:'cache',data:daily.map(function(d){return d.tokens?d.tokens.cache_read_tokens:d.cr||0;}),barMaxWidth:50,itemStyle:{color:'#22c55e'}}
@@ -262,7 +266,7 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
     var maxLabelLen=Math.max.apply(null,sorted.map(function(p){return p.project.length;}));
     return{
       tooltip:Object.assign(itemTooltip(),{formatter:function(p){return'<b>'+esc(p.name)+'</b><br>Cost: <b>'+fmtCost(p.value)+'</b>';}}),
-      grid:{left:Math.min(maxLabelLen*7+20,180),right:80,top:20,bottom:40,containLabel:false},
+      grid:{left:'3%',right:'8%',top:20,bottom:20,containLabel:true},
       xAxis:{type:'value',axisLabel:{formatter:function(v){return fmtCost(v);},color:textColor()},splitLine:{lineStyle:{color:gridColor()}}},
       yAxis:{type:'category',data:sorted.map(function(p){return p.project;}),axisLabel:{color:textColor(),width:150,overflow:'truncate'},axisLine:{lineStyle:{color:gridColor()}}},
       series:[{type:'bar',data:sorted.map(function(p,i){return{value:p.cost.total_cost,itemStyle:{color:COLORS[i%COLORS.length],borderRadius:[0,4,4,0]}};}),barMaxWidth:28,
@@ -293,8 +297,8 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
     });
     return{
       tooltip:Object.assign(baseTooltip(),{formatter:function(p){return'<b>'+p[0].axisValueLabel+'</b><br>Cache Reuse: <b>'+p[0].value.toFixed(1)+'%</b>';}}),
-      grid:{left:50,right:20,top:30,bottom:30},
-      xAxis:{type:'category',data:labels,axisLabel:{color:textColor(),rotate:labels.length>10?30:0},axisLine:{lineStyle:{color:gridColor()}}},
+      grid:{left:'3%',right:'3%',top:20,bottom:15,containLabel:true},
+      xAxis:{type:'category',data:labels,axisLabel:{color:textColor(),rotate:labels.length>7?45:0,hideOverlap:true},axisLine:{lineStyle:{color:gridColor()}}},
       yAxis:{type:'value',min:0,max:100,axisLabel:{formatter:function(v){return v+'%';},color:textColor()},splitLine:{lineStyle:{color:gridColor()}}},
       series:[{type:'line',data:data,smooth:true,symbol:data.length<=2?'circle':'none',symbolSize:8,areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(34,197,94,0.3)'},{offset:1,color:'rgba(34,197,94,0.02)'}]}},lineStyle:{color:'#22c55e',width:2},itemStyle:{color:'#22c55e'}}]
     };
@@ -304,8 +308,8 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
     var monthly=days>0?(totalCost/days)*30:0;
     return{
       tooltip:Object.assign(baseTooltip(),{trigger:'axis'}),
-      grid:{left:80,right:20,top:20,bottom:30},
-      xAxis:{type:'category',data:['Your Projected\\nMonthly','Pro ($20/mo)','Max 5x ($100/mo)','Max 20x ($200/mo)'],axisLabel:{color:textColor(),interval:0},axisLine:{lineStyle:{color:gridColor()}}},
+      grid:{left:'3%',right:'3%',top:25,bottom:15,containLabel:true},
+      xAxis:{type:'category',data:['Projected\\nMonthly','Pro\\n$20/mo','Max 5x\\n$100/mo','Max 20x\\n$200/mo'],axisLabel:{color:textColor(),interval:0,rotate:0},axisLine:{lineStyle:{color:gridColor()}}},
       yAxis:{type:'value',axisLabel:{formatter:function(v){return fmtCost(v);},color:textColor()},splitLine:{lineStyle:{color:gridColor()}}},
       series:[{type:'bar',barMaxWidth:60,data:[
         {value:monthly,itemStyle:{color:'#6366f1'}},
@@ -459,13 +463,9 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
     charts['chartCache'].setOption(cacheOption(chartDaily),{notMerge:true});
     charts['chartCacheEff'].setOption(cacheEffOption(chartDaily),{notMerge:true});
 
-    // Model: aggregate from sessions if project filter
-    if(p){
-      var fm={};fSessions.forEach(function(ss){if(ss.models)Object.entries(ss.models).forEach(function(en){if(!fm[en[0]])fm[en[0]]={cost:{total_cost:0}};fm[en[0]].cost.total_cost+=en[1].cost.total_cost;});});
-      charts['chartModel'].setOption(modelOption(fm),{notMerge:true});
-    } else {
-      charts['chartModel'].setOption(modelOption(allData.models),{notMerge:true});
-    }
+    // Model: always aggregate from filtered sessions so date+project filters both apply
+    var fm={};fSessions.forEach(function(ss){if(ss.models)Object.entries(ss.models).forEach(function(en){if(!fm[en[0]])fm[en[0]]={cost:{total_cost:0}};fm[en[0]].cost.total_cost+=en[1].cost.total_cost;});});
+    charts['chartModel'].setOption(modelOption(fm),{notMerge:true});
 
     // Project: hide when single project selected, show otherwise
     var projPanel=document.getElementById('projectPanel');
@@ -477,9 +477,15 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
       charts['chartProject'].setOption(projectOption(fp),{notMerge:true});
     }
 
-    // Heatmap: use per-project heatmap if available, else use all
-    if(p && allData.project_heatmaps && allData.project_heatmaps[p]){
-      renderHeatmap(allData.project_heatmaps[p]);
+    // Heatmap: rebuild from filtered sessions so date+project filters both apply
+    var hasFilter=s||e||p;
+    if(hasFilter){
+      var hm=[];for(var di=0;di<7;di++){hm[di]=[];for(var hi=0;hi<24;hi++)hm[di][hi]=0;}
+      fSessions.forEach(function(ss){
+        var dt=new Date(ss.startTime);var day=dt.getDay();var hr=dt.getHours();
+        hm[day][hr]+=(ss.tokens?ss.tokens.total_tokens:0);
+      });
+      renderHeatmap(hm);
     } else {
       renderHeatmap(allData.heatmap);
     }
@@ -489,6 +495,9 @@ td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.8rem;font-v
   }
 
   document.getElementById('btnApply').addEventListener('click',applyFilters);
+  document.getElementById('dateStart').addEventListener('change',applyFilters);
+  document.getElementById('dateEnd').addEventListener('change',applyFilters);
+  document.getElementById('projectFilter').addEventListener('change',applyFilters);
   document.getElementById('btnReset').addEventListener('click',function(){
     document.getElementById('dateStart').value='${esc(dateStart)}';
     document.getElementById('dateEnd').value='${esc(dateEnd)}';

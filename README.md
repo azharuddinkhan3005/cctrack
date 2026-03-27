@@ -6,6 +6,19 @@
 
 Claude Code usage analytics — accurate cost tracking and a beautiful interactive dashboard from your local JSONL files.
 
+### Dashboard
+
+<p align="center">
+  <img src="assets/dashboard-dark.png" alt="cctrack dashboard — dark mode" width="100%">
+</p>
+
+<details>
+<summary>Light mode</summary>
+<p align="center">
+  <img src="assets/dashboard-light.png" alt="cctrack dashboard — light mode" width="100%">
+</p>
+</details>
+
 ## Quick Start
 
 ```bash
@@ -180,6 +193,16 @@ node dist/index.js daily
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide and architecture overview.
+
+## Privacy
+
+cctrack processes all data locally on your machine. No usage data is ever transmitted to any server. The only network request is an optional fetch of Anthropic's public pricing page to keep model prices current — no user data is sent.
+
+## Disclaimer
+
+cctrack is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Anthropic, PBC. "Claude" and "Claude Code" are trademarks of Anthropic, PBC.
+
+Pricing data is sourced from Anthropic's publicly available pricing page and may not reflect the most current rates. Always verify costs against your actual Anthropic billing.
 
 ## License
 
