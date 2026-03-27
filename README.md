@@ -4,18 +4,15 @@
 [![license](https://img.shields.io/npm/l/cctrack)](https://github.com/azharuddinkhan3005/cctrack/blob/main/LICENSE)
 [![node](https://img.shields.io/node/v/cctrack)](https://nodejs.org)
 
-Claude Code usage analytics — accurate cost tracking and a beautiful interactive dashboard from your local JSONL files.
+Know exactly what Claude Code costs you. Accurate token tracking, cost breakdowns, and a beautiful interactive dashboard -- all from your local JSONL logs.
+
+## What It Does
+
+cctrack reads Claude Code's local usage logs and turns them into actionable analytics. It deduplicates requests, applies Anthropic's tiered pricing, and gives you cost breakdowns by day, session, project, and model -- in the terminal or as an interactive HTML dashboard.
 
 <p align="center">
-  <img src="assets/dashboard-dark.png" alt="cctrack dashboard — dark mode" width="100%">
+  <img src="assets/dashboard-hero.png" alt="cctrack dashboard overview" width="100%">
 </p>
-
-<details>
-<summary>Light mode</summary>
-<p align="center">
-  <img src="assets/dashboard-light.png" alt="cctrack dashboard — light mode" width="100%">
-</p>
-</details>
 
 ## Quick Start
 
@@ -23,44 +20,93 @@ Claude Code usage analytics — accurate cost tracking and a beautiful interacti
 npx cctrack@latest
 ```
 
-Or install globally:
+That's it. Your dashboard opens in the browser with your full usage history.
+
+To install globally:
 
 ```bash
 npm install -g cctrack
 ```
 
-## Features
+## Dashboard Panels
 
-- **Accurate cost calculation** — 3-tier deduplication (requestId > messageId > hash), tiered pricing at 200K token threshold
-- **14 Anthropic models** with 24 aliases, dynamic pricing with bundled fallback
-- **Interactive HTML dashboard** — 12 panels, project/date filters, dark/light mode, ECharts charts
-- **Per-project breakdown** — automatically resolves subagent paths to parent projects
-- **Budget alerts** — 4-level system (safe/warning/critical/exceeded) with configurable daily/monthly budgets
-- **5-hour window tracking** — usage patterns grouped by Anthropic-style time windows
-- **ROI calculator** — compare API-equivalent cost against Pro/Max5/Max20 subscription plans
-- **Real-time monitor** — live terminal display with burn rate projections
-- **Rate limit intelligence** — tracks billable tokens (input + cache_creation, NOT cache_read)
-- **Multiple output formats** — terminal tables, JSON, CSV for every command
+The dashboard is a self-contained HTML file with 9 interactive panels. Filter by date range or project -- all panels update together. Supports dark and light mode.
 
-## Commands
+### Cost Over Time
+
+<img src="assets/panel-cost.png" alt="Cost Over Time" width="700">
+
+Daily spend as bars with a cumulative cost trendline. Spot spending spikes and trends at a glance.
+
+### Input / Output Tokens
+
+<img src="assets/panel-io.png" alt="I/O Tokens" width="700">
+
+Input vs. output token volume per day. See how much you're sending versus receiving.
+
+### Cache Tokens
+
+<img src="assets/panel-cache.png" alt="Cache Tokens" width="700">
+
+Cache write vs. cache read volume over time. High cache reads relative to writes means you're getting good prompt caching value.
+
+### Project Breakdown
+
+<img src="assets/panel-project.png" alt="Project Breakdown" width="700">
+
+Cost per project as a horizontal bar chart. Instantly see which projects consume the most.
+
+### Model Distribution
+
+<img src="assets/panel-model.png" alt="Model Distribution" width="700">
+
+Spend split by model. Understand how your costs divide across Opus, Sonnet, Haiku, and others.
+
+### Cache Reuse Efficiency
+
+<img src="assets/panel-cache-eff.png" alt="Cache Efficiency" width="700">
+
+Cache hit rate over time. Track whether your workflows are effectively reusing cached prompts.
+
+### Usage Heatmap
+
+<img src="assets/panel-heatmap.png" alt="Usage Heatmap" width="700">
+
+Hour-of-day by day-of-week activity map. See when you use Claude Code the most.
+
+### Sessions
+
+<img src="assets/panel-sessions.png" alt="Sessions table" width="700">
+
+Sortable table of every session with project, model, duration, request count, tokens, and cost.
+
+### ROI Analysis
+
+<img src="assets/panel-roi.png" alt="ROI Analysis" width="700">
+
+Compares your projected monthly cost against Pro, Max 5x, and Max 20x subscription plans so you can see which plan gives you the best value.
+
+## CLI Commands
 
 | Command | Description |
 |---|---|
 | `cctrack` | Open interactive HTML dashboard (default) |
 | `cctrack daily` | Daily usage breakdown with cost sparklines |
 | `cctrack monthly` | Monthly aggregated view |
-| `cctrack session` | Per-session breakdown with multi-model indicator |
-| `cctrack blocks` | Usage grouped by 5-hour windows (approximated, see [limitations](#known-limitations)) |
-| `cctrack roi --plan max5` | ROI analysis vs subscription plans |
+| `cctrack session` | Per-session breakdown with project and model |
+| `cctrack blocks` | Usage grouped by 5-hour windows |
+| `cctrack roi` | ROI analysis vs subscription plans |
+| `cctrack live` | Real-time terminal monitor with burn rate |
+| `cctrack statusline` | Compact one-line output for tmux/editors |
+| `cctrack limits` | Rate limit analysis (billable token tracking) |
 | `cctrack export csv` | Export per-request data as CSV |
 | `cctrack export json` | Export structured JSON |
-| `cctrack live` | Real-time terminal monitor |
-| `cctrack statusline` | One-line output for tmux/editors (see [limitations](#known-limitations)) |
-| `cctrack limits` | Rate limit analysis (billable token tracking) |
 | `cctrack pricing list` | View all model prices |
-| `cctrack config set budget.daily 100` | Set daily budget alert |
+| `cctrack config` | Manage budgets and settings |
 
-## Example Output
+## Terminal Output Examples
+
+**Daily breakdown:**
 
 ```
 $ cctrack daily
@@ -77,6 +123,8 @@ Total: 258.0M tokens, $150.75
 Burn rate: $3.14/hr, $75.38/day → projected $2261.25/month
 ```
 
+**Session view:**
+
 ```
 $ cctrack session
 
@@ -89,16 +137,18 @@ $ cctrack session
 2 sessions, 815 requests, 258.0M tokens, $150.75
 ```
 
+**Statusline (for tmux or editor status bars):**
+
 ```
 $ cctrack statusline
 $58.30 today │ opus-4.6 │ 99.9M tok │ █████░░░ 52% 5h (2h 15m)
 ```
 
-## Common Options
+## Options
 
-Most commands support these flags:
+Most commands accept these flags:
 
-```text
+```
 --since YYYY-MM-DD    Filter from date
 --until YYYY-MM-DD    Filter to date
 --project <name>      Filter by project
@@ -108,41 +158,37 @@ Most commands support these flags:
 --breakdown           Show per-model breakdown (daily/monthly)
 ```
 
-## Dashboard
-
-Self-contained HTML file with 12 interactive ECharts panels — cost trends, token breakdown, cache efficiency, project/model distribution, usage heatmap, session table, and ROI analysis. Filter by date range and project — all panels update together.
-
-```bash
-cctrack dashboard              # Open in browser
-cctrack dashboard --save report.html  # Save to file
-cctrack dashboard --json       # Get raw data
-```
-
 ## Budget Alerts
 
-Set a daily spending budget:
+Set daily or monthly spending budgets:
 
 ```bash
 cctrack config set budget.daily 100
+cctrack config set budget.monthly 2000
 ```
 
-The daily and live commands show a color-coded progress bar:
+The `daily` and `live` commands show a color-coded progress bar:
 
 ```
 Daily Budget: ████████████░░░░░░░░ 62% ($62.00 / $100.00)
 ```
 
-Levels: green (<50%) → yellow (50-80%) → red (80-100%) → exceeded (>100%)
+| Level | Threshold | Color |
+|---|---|---|
+| Safe | < 50% | Green |
+| Warning | 50 -- 80% | Yellow |
+| Critical | 80 -- 100% | Red |
+| Exceeded | > 100% | Red (flashing) |
 
 ## How It Works
 
-cctrack reads Claude Code's JSONL usage logs from `~/.claude/projects/` and:
+cctrack reads Claude Code's JSONL usage logs from `~/.claude/projects/` and processes them in five steps:
 
-1. **Parses** entries with Zod schema validation
-2. **Deduplicates** using requestId > messageId > content hash
-3. **Resolves projects** from the filesystem directory structure (handles subagent paths)
-4. **Calculates costs** using bundled Anthropic pricing with tiered rates
-5. **Aggregates** into daily/monthly/session/project views in a single pass
+1. **Parse** -- Validates each JSONL entry against a Zod schema, skips non-usage entries
+2. **Deduplicate** -- Removes duplicates using requestId > messageId > content hash (3-tier)
+3. **Resolve projects** -- Maps filesystem paths to project names, handles subagent paths
+4. **Calculate costs** -- Applies Anthropic's per-token pricing with tiered rates at the 200K threshold
+5. **Aggregate** -- Builds daily, monthly, session, and project views in a single pass
 
 ## Known Limitations
 
@@ -150,11 +196,11 @@ cctrack is built on Claude Code's local JSONL logs and has inherent accuracy bou
 
 ### Billable tokens vs. total tokens
 
-Anthropic does not count `cache_read` tokens toward rate limits — only `input` and `cache_creation` tokens are billable. cctrack's `limits` command reports billable tokens using this formula. This matters because cache-heavy sessions can show 200M+ total tokens while only 2M are actually billable. **Cost calculations use all token types at their correct per-type rates, but rate limit analysis intentionally excludes cache_read.**
+Anthropic does not count `cache_read` tokens toward rate limits -- only `input` and `cache_creation` tokens are billable. cctrack's `limits` command reports billable tokens using this formula. This matters because cache-heavy sessions can show 200M+ total tokens while only 2M are actually billable. **Cost calculations use all token types at their correct per-type rates, but rate limit analysis intentionally excludes cache_read.**
 
 ### Statusline data depends on your setup
 
-`cctrack statusline` is designed to be used as a Claude Code statusline hook (configured via `.claude/settings.json`). When configured this way, it receives real rate limit data (`used_percentage`, `resets_at`) directly from Claude Code's stdin on every assistant message. **If you run `cctrack statusline` manually from a terminal, this real-time rate limit data is not available** — you will only see cost and token data derived from JSONL logs.
+`cctrack statusline` is designed to be used as a Claude Code statusline hook (configured via `.claude/settings.json`). When configured this way, it receives real rate limit data (`used_percentage`, `resets_at`) directly from Claude Code's stdin on every assistant message. **If you run `cctrack statusline` manually from a terminal, this real-time rate limit data is not available** -- you will only see cost and token data derived from JSONL logs.
 
 ### Blocks are approximations, not Anthropic's actual windows
 
@@ -162,7 +208,7 @@ Anthropic does not count `cache_read` tokens toward rate limits — only `input`
 
 ### Rate limit prediction is uncalibrated
 
-cctrack includes an EMA-based predictive model for rate limit estimation, but it requires calibration data (actual rate limit events) to be accurate. Most users — especially those on Max plans — rarely hit rate limits, so the model will have little or no calibration data. Treat its predictions as rough estimates, not precise forecasts.
+cctrack includes an EMA-based predictive model for rate limit estimation, but it requires calibration data (actual rate limit events) to be accurate. Most users -- especially those on Max plans -- rarely hit rate limits, so the model will have little or no calibration data. Treat its predictions as rough estimates, not precise forecasts.
 
 ### JSONL logs don't capture everything
 
@@ -175,14 +221,9 @@ cctrack includes an EMA-based predictive model for rate limit estimation, but it
 
 cctrack uses Anthropic's publicly listed per-token prices. Your actual bill may differ due to volume discounts, enterprise agreements, or pricing changes not yet reflected in cctrack's bundled price table. Always verify against your Anthropic billing dashboard.
 
-## Requirements
-
-- Node.js >= 20
-- Claude Code installed (with usage data in `~/.claude/projects/`)
-
 ## Configuration
 
-Config stored at `~/.cctrack/config.json`:
+Config is stored at `~/.cctrack/config.json`:
 
 ```bash
 cctrack config set budget.daily 100     # Daily budget in $
@@ -191,9 +232,26 @@ cctrack config get                      # View current config
 cctrack config reset                    # Reset to defaults
 ```
 
-## Environment Variables
+**Environment variables:**
 
-- `CLAUDE_CONFIG_DIR` — Custom Claude config directory (default: `~/.claude`)
+| Variable | Description | Default |
+|---|---|---|
+| `CLAUDE_CONFIG_DIR` | Custom Claude config directory | `~/.claude` |
+
+## Requirements
+
+- Node.js >= 20
+- Claude Code installed (with usage data in `~/.claude/projects/`)
+
+## Privacy
+
+cctrack processes all data locally on your machine. No usage data is ever transmitted to any server. The only network request is an optional fetch of Anthropic's public pricing page to keep model prices current -- no user data is sent.
+
+## Disclaimer
+
+cctrack is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Anthropic, PBC. "Claude" and "Claude Code" are trademarks of Anthropic, PBC.
+
+Pricing data is sourced from Anthropic's publicly available pricing page and may not reflect the most current rates. Always verify costs against your actual Anthropic billing.
 
 ## Development
 
@@ -207,17 +265,7 @@ pnpm test:e2e       # 14 browser tests
 node dist/index.js daily
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide and architecture overview.
-
-## Privacy
-
-cctrack processes all data locally on your machine. No usage data is ever transmitted to any server. The only network request is an optional fetch of Anthropic's public pricing page to keep model prices current — no user data is sent.
-
-## Disclaimer
-
-cctrack is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Anthropic, PBC. "Claude" and "Claude Code" are trademarks of Anthropic, PBC.
-
-Pricing data is sourced from Anthropic's publicly available pricing page and may not reflect the most current rates. Always verify costs against your actual Anthropic billing.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide.
 
 ## License
 
