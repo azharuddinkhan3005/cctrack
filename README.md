@@ -26,7 +26,7 @@ cctrack reads Claude Code's local usage logs and turns them into actionable anal
 - **ROI calculator** -- Compares your API-equivalent cost against Pro ($20/mo), Max 5x ($100/mo), and Max 20x ($200/mo) plans with fuzzy plan name matching.
 - **Real-time monitor** -- Live terminal display that refreshes every few seconds with current session cost and burn rate.
 - **Rate limit intelligence** -- Tracks billable tokens (input + cache_creation only, NOT cache_read) and includes an EMA-based predictive model.
-- **Multiple output formats** -- Every command supports `--json` and `--csv` output for scripting and automation.
+- **Multiple output formats** -- `--json` on all commands, `--csv` on daily/monthly/session for spreadsheet export.
 - **Statusline integration** -- One-line output designed for tmux status bars and editor integrations, with optional stdin rate limit data from Claude Code.
 - **Zero data collection** -- All processing is local. No telemetry, no server, no account required.
 
@@ -46,7 +46,13 @@ npm install -g cctrack
 
 ## Dashboard Panels
 
-The dashboard is a self-contained HTML file with 9 interactive panels. Filter by date range or project -- all panels update together. Supports dark and light mode.
+The dashboard is a self-contained HTML file with 9 interactive panels. No server needed -- open it locally or share the file.
+
+- **Dark / light mode** -- Toggle with the button in the top-right corner. Charts rebuild with correct theme colors.
+- **Live filtering** -- Date range and project filters auto-apply on change (no need to click Apply). All panels update together.
+- **Responsive** -- Adapts to desktop, tablet, and mobile viewports with proper breakpoints at 1024px, 768px, and 480px.
+- **Print-ready** -- Charts convert to static images before printing so they render correctly on paper.
+- **Accessible** -- ARIA labels on all chart containers, screen-reader-friendly data tables.
 
 ### Cost Over Time
 
@@ -152,17 +158,21 @@ cctrack roi --json             # Machine-readable output
 Real-time terminal monitor that refreshes every few seconds. Shows today's cost, burn rate, and budget status. Press Ctrl+C to exit.
 
 ```bash
-cctrack live                   # Default refresh every 5 seconds
-cctrack live --project my-app  # Monitor a specific project
+cctrack live                       # Default refresh every 5 seconds
+cctrack live --interval 10         # Refresh every 10 seconds
+cctrack live --project my-app      # Monitor a specific project
+cctrack live --mode display        # Use Claude Code's cost estimates
 ```
 
 ### `cctrack blocks`
 
-Groups usage into 5-hour time windows to reveal consumption patterns. Useful for understanding when you hit rate limits.
+Groups usage into 5-hour time windows to reveal consumption patterns. Also displays weekly rate limit windows and extra usage credit data when available (from statusline hook).
 
 ```bash
-cctrack blocks                 # Current window and recent history
-cctrack blocks --json          # Machine-readable output
+cctrack blocks                       # Current window and recent history
+cctrack blocks --json                # Machine-readable output
+cctrack blocks --live                # Auto-refresh every 5 seconds
+cctrack blocks --since 2026-03-25    # Filter by date range
 ```
 
 ### `cctrack limits`
@@ -176,12 +186,16 @@ cctrack limits --json          # Detailed JSON with prediction model
 
 ### `cctrack statusline`
 
-Designed to be piped into tmux or editor status bars. Ultra-fast, single-line output.
+Designed to be piped into tmux or editor status bars. Ultra-fast with a 30-second cache for repeated calls.
 
 ```bash
-cctrack statusline             # One-line summary
-cctrack statusline --json      # Structured JSON for scripts
+cctrack statusline                                 # One-line summary
+cctrack statusline --json                          # Structured JSON for scripts
+cctrack statusline --format '{cost} | {model}'     # Custom format
+cctrack statusline --no-cache                      # Force fresh parse
 ```
+
+**Custom format placeholders:** `{cost}`, `{model}`, `{tokens}`, `{block_pct}`, `{block_remaining}`
 
 To use as a Claude Code statusline hook (receives real rate limit data from stdin), add to `.claude/settings.json`:
 
@@ -190,6 +204,8 @@ To use as a Claude Code statusline hook (receives real rate limit data from stdi
   "statusline": "cctrack statusline"
 }
 ```
+
+When configured as a hook, cctrack receives rate limit data (`used_percentage`, `resets_at`, weekly windows, extra usage credits) directly from Claude Code's stdin. This data is persisted to `~/.cctrack/ratelimits.json` and shared with `blocks` and `live` commands.
 
 ### `cctrack export`
 
@@ -287,17 +303,30 @@ $ cctrack blocks
 
 ## Options
 
-Most commands accept these flags:
+**Global flags** (supported by most commands):
 
-```
---since YYYY-MM-DD    Filter from date
---until YYYY-MM-DD    Filter to date
---project <name>      Filter by project
---mode <mode>         Cost mode: calculate (default), display, compare
---json                Output as JSON
---csv                 Output as CSV
---breakdown           Show per-model breakdown (daily/monthly)
-```
+| Flag | Description | Available on |
+|---|---|---|
+| `--since YYYY-MM-DD` | Filter from date | daily, monthly, session, blocks, dashboard, export, roi, live |
+| `--until YYYY-MM-DD` | Filter to date | daily, monthly, session, blocks, dashboard, export, roi, live |
+| `--project <name>` | Filter by project | daily, monthly, session, dashboard, export, live |
+| `--mode <mode>` | Cost mode: `calculate` (default), `display`, `compare` | daily, monthly, session, blocks, dashboard, export, roi, live, statusline, limits |
+| `--timezone <tz>` | Timezone for date grouping (e.g. `America/New_York`) | daily, monthly, session, dashboard, export, roi, live |
+| `--json` | Output as JSON | daily, monthly, session, blocks, dashboard, roi, live, statusline, limits, pricing, export |
+| `--csv` | Output as CSV | daily, monthly, session |
+| `--breakdown` | Show per-model breakdown | daily, monthly |
+
+**Command-specific flags:**
+
+| Flag | Command | Description |
+|---|---|---|
+| `--save <path>` | dashboard | Save HTML to file without opening browser |
+| `--interval <sec>` | live | Refresh interval in seconds (default: 5) |
+| `--live` | blocks | Auto-refresh every 5 seconds |
+| `--full` | session | Show full session IDs and project names (no truncation) |
+| `--format <tpl>` | statusline | Custom format: `{cost}`, `{model}`, `{tokens}`, `{block_pct}`, `{block_remaining}` |
+| `--no-cache` | statusline | Force fresh parse, skip 30-second cache |
+| `--plan <name>` | roi | Plan to compare: `pro`, `max5`, `max20` (fuzzy: `20`, `100`, `200`, `max`) |
 
 ## Budget Alerts
 
@@ -328,6 +357,7 @@ cctrack maintains accurate per-token pricing for all 14 Anthropic models:
 ```bash
 cctrack pricing list           # View all model prices
 cctrack pricing status         # Check pricing source and freshness
+cctrack pricing update         # Force-fetch latest prices from Anthropic
 cctrack pricing list --json    # Machine-readable pricing data
 ```
 
@@ -386,6 +416,7 @@ Config is stored at `~/.cctrack/config.json`:
 ```bash
 cctrack config set budget.daily 100     # Daily budget in $
 cctrack config set budget.monthly 2000  # Monthly budget in $
+cctrack config set budget.block 50      # Per 5-hour block budget in $
 cctrack config get                      # View current config
 cctrack config reset                    # Reset to defaults
 ```
