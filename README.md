@@ -50,12 +50,12 @@ npm install -g cctrack
 | `cctrack daily` | Daily usage breakdown with cost sparklines |
 | `cctrack monthly` | Monthly aggregated view |
 | `cctrack session` | Per-session breakdown with multi-model indicator |
-| `cctrack blocks` | Usage grouped by 5-hour windows |
+| `cctrack blocks` | Usage grouped by 5-hour windows (approximated, see [limitations](#known-limitations)) |
 | `cctrack roi --plan max5` | ROI analysis vs subscription plans |
 | `cctrack export csv` | Export per-request data as CSV |
 | `cctrack export json` | Export structured JSON |
 | `cctrack live` | Real-time terminal monitor |
-| `cctrack statusline` | Ultra-fast output for tmux/editors |
+| `cctrack statusline` | One-line output for tmux/editors (see [limitations](#known-limitations)) |
 | `cctrack limits` | Rate limit analysis (billable token tracking) |
 | `cctrack pricing list` | View all model prices |
 | `cctrack config set budget.daily 100` | Set daily budget alert |
@@ -143,6 +143,37 @@ cctrack reads Claude Code's JSONL usage logs from `~/.claude/projects/` and:
 3. **Resolves projects** from the filesystem directory structure (handles subagent paths)
 4. **Calculates costs** using bundled Anthropic pricing with tiered rates
 5. **Aggregates** into daily/monthly/session/project views in a single pass
+
+## Known Limitations
+
+cctrack is built on Claude Code's local JSONL logs and has inherent accuracy boundaries. We want to be upfront about what it can and cannot tell you.
+
+### Billable tokens vs. total tokens
+
+Anthropic does not count `cache_read` tokens toward rate limits — only `input` and `cache_creation` tokens are billable. cctrack's `limits` command reports billable tokens using this formula. This matters because cache-heavy sessions can show 200M+ total tokens while only 2M are actually billable. **Cost calculations use all token types at their correct per-type rates, but rate limit analysis intentionally excludes cache_read.**
+
+### Statusline data depends on your setup
+
+`cctrack statusline` is designed to be used as a Claude Code statusline hook (configured via `.claude/settings.json`). When configured this way, it receives real rate limit data (`used_percentage`, `resets_at`) directly from Claude Code's stdin on every assistant message. **If you run `cctrack statusline` manually from a terminal, this real-time rate limit data is not available** — you will only see cost and token data derived from JSONL logs.
+
+### Blocks are approximations, not Anthropic's actual windows
+
+`cctrack blocks` groups your usage into 5-hour windows to help you see usage patterns. These windows are based on your local timestamps and do not correspond to Anthropic's internal rate limit windows. Anthropic's rate limiting involves multiple overlapping systems that are not publicly documented and cannot be reconstructed from JSONL data alone.
+
+### Rate limit prediction is uncalibrated
+
+cctrack includes an EMA-based predictive model for rate limit estimation, but it requires calibration data (actual rate limit events) to be accurate. Most users — especially those on Max plans — rarely hit rate limits, so the model will have little or no calibration data. Treat its predictions as rough estimates, not precise forecasts.
+
+### JSONL logs don't capture everything
+
+- **Web usage** (claude.ai) shares the same rate limit pool but is not recorded in local JSONL files
+- **Output token counts** in JSONL may undercount actual consumption in some cases
+- **Plan changes** (e.g., switching from Pro to Max 5x) invalidate historical rate limit estimates
+- **Extra usage credits** extend the effective limit dynamically and are not visible in logs
+
+### Cost estimates vs. actual billing
+
+cctrack uses Anthropic's publicly listed per-token prices. Your actual bill may differ due to volume discounts, enterprise agreements, or pricing changes not yet reflected in cctrack's bundled price table. Always verify against your Anthropic billing dashboard.
 
 ## Requirements
 
