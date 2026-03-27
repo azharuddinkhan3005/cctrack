@@ -1,8 +1,8 @@
 # cctrack
 
-[![npm version](https://img.shields.io/npm/v/cctrack)](https://www.npmjs.com/package/cctrack)
-[![license](https://img.shields.io/npm/l/cctrack)](https://github.com/azharuddinkhan3005/cctrack/blob/main/LICENSE)
-[![node](https://img.shields.io/node/v/cctrack)](https://nodejs.org)
+[![npm version](https://img.shields.io/npm/v/cctrackr)](https://www.npmjs.com/package/cctrackr)
+[![license](https://img.shields.io/npm/l/cctrackr)](https://github.com/azharuddinkhan3005/cctrack/blob/main/LICENSE)
+[![node](https://img.shields.io/node/v/cctrackr)](https://nodejs.org)
 
 Know exactly what Claude Code costs you. Accurate token tracking, cost breakdowns, and a beautiful interactive dashboard -- all from your local JSONL logs.
 
@@ -33,7 +33,7 @@ cctrack reads Claude Code's local usage logs and turns them into actionable anal
 ## Quick Start
 
 ```bash
-npx cctrack@latest
+npx cctrackr@latest
 ```
 
 That's it. Your dashboard opens in the browser with your full usage history.
@@ -41,7 +41,7 @@ That's it. Your dashboard opens in the browser with your full usage history.
 To install globally:
 
 ```bash
-npm install -g cctrack
+npm install -g cctrackr
 ```
 
 ## Dashboard Panels

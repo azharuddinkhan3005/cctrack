@@ -1,5 +1,5 @@
 {
-  "name": "cctrack",
+  "name": "cctrackr",
   "version": "0.1.0",
   "description": "Claude Code usage analytics — accurate metrics and a beautiful HTML dashboard from local JSONL files",
   "type": "module",
@@ -10,7 +10,7 @@
     }
   },
   "bin": {
-    "cctrack": "./dist/index.js"
+    "cctrack": "dist/index.js"
   },
   "files": [
     "dist",
