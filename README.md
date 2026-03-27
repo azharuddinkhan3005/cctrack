@@ -14,6 +14,22 @@ cctrack reads Claude Code's local usage logs and turns them into actionable anal
   <img src="assets/dashboard-hero.png" alt="cctrack dashboard overview" width="100%">
 </p>
 
+## Features
+
+- **Accurate cost calculation** -- 3-tier deduplication (requestId > messageId > content hash) eliminates double-counting. Tiered pricing applies Anthropic's rate change at the 200K token threshold.
+- **14 Anthropic models, 24 aliases** -- Covers every Claude model. Dynamic pricing fetches current rates from Anthropic's public page, with bundled fallback if offline.
+- **Interactive HTML dashboard** -- 9 chart panels, project/date filters, dark/light mode. Self-contained HTML file you can share or archive.
+- **Per-project breakdown** -- Automatically resolves project names from the filesystem directory structure, including subagent paths that point back to parent projects.
+- **Budget alerts** -- 4-level system (safe / warning / critical / exceeded) with configurable daily and monthly budgets.
+- **Burn rate projections** -- Hourly, daily, and monthly burn rates with projected month-end spend, suppressed when data is insufficient (< 1 hour).
+- **5-hour window tracking** -- Usage grouped into time windows to help you see consumption patterns across the day.
+- **ROI calculator** -- Compares your API-equivalent cost against Pro ($20/mo), Max 5x ($100/mo), and Max 20x ($200/mo) plans with fuzzy plan name matching.
+- **Real-time monitor** -- Live terminal display that refreshes every few seconds with current session cost and burn rate.
+- **Rate limit intelligence** -- Tracks billable tokens (input + cache_creation only, NOT cache_read) and includes an EMA-based predictive model.
+- **Multiple output formats** -- Every command supports `--json` and `--csv` output for scripting and automation.
+- **Statusline integration** -- One-line output designed for tmux status bars and editor integrations, with optional stdin rate limit data from Claude Code.
+- **Zero data collection** -- All processing is local. No telemetry, no server, no account required.
+
 ## Quick Start
 
 ```bash
@@ -104,6 +120,104 @@ Compares your projected monthly cost against Pro, Max 5x, and Max 20x subscripti
 | `cctrack pricing list` | View all model prices |
 | `cctrack config` | Manage budgets and settings |
 
+## Command Details
+
+### `cctrack dashboard`
+
+Opens an interactive HTML dashboard in your browser. The HTML file is self-contained -- no server needed. You can save it, share it, or archive it.
+
+```bash
+cctrack dashboard                        # Open in browser
+cctrack dashboard --save report.html     # Save to file without opening
+cctrack dashboard --json                 # Output raw dashboard data as JSON
+cctrack dashboard --project my-app       # Pre-filter to a specific project
+cctrack dashboard --since 2026-03-01     # Filter from a date
+```
+
+### `cctrack roi`
+
+Compares your actual API-equivalent cost against subscription plans. Supports fuzzy plan names:
+
+```bash
+cctrack roi                    # Default: compare against all plans
+cctrack roi --plan pro         # Compare against Pro ($20/mo)
+cctrack roi --plan max5        # Compare against Max 5x ($100/mo)
+cctrack roi --plan 200         # Fuzzy: "200" resolves to Max 20x
+cctrack roi --plan max         # Fuzzy: "max" resolves to Max 5x
+cctrack roi --json             # Machine-readable output
+```
+
+### `cctrack live`
+
+Real-time terminal monitor that refreshes every few seconds. Shows today's cost, burn rate, and budget status. Press Ctrl+C to exit.
+
+```bash
+cctrack live                   # Default refresh every 5 seconds
+cctrack live --project my-app  # Monitor a specific project
+```
+
+### `cctrack blocks`
+
+Groups usage into 5-hour time windows to reveal consumption patterns. Useful for understanding when you hit rate limits.
+
+```bash
+cctrack blocks                 # Current window and recent history
+cctrack blocks --json          # Machine-readable output
+```
+
+### `cctrack limits`
+
+Analyzes rate limit consumption using billable tokens only (input + cache_creation, excluding cache_read).
+
+```bash
+cctrack limits                 # Terminal summary
+cctrack limits --json          # Detailed JSON with prediction model
+```
+
+### `cctrack statusline`
+
+Designed to be piped into tmux or editor status bars. Ultra-fast, single-line output.
+
+```bash
+cctrack statusline             # One-line summary
+cctrack statusline --json      # Structured JSON for scripts
+```
+
+To use as a Claude Code statusline hook (receives real rate limit data from stdin), add to `.claude/settings.json`:
+
+```json
+{
+  "statusline": "cctrack statusline"
+}
+```
+
+### `cctrack export`
+
+Export raw per-request data for external analysis:
+
+```bash
+cctrack export csv                           # CSV to stdout
+cctrack export csv > usage.csv               # Save to file
+cctrack export json                          # Full dashboard JSON
+cctrack export csv --since 2026-03-01        # Date-filtered export
+cctrack export csv --project my-app          # Project-filtered export
+```
+
+### Cost Modes
+
+The `--mode` flag controls how costs are calculated:
+
+| Mode | Description |
+|---|---|
+| `calculate` | Default. Computes cost from tokens using Anthropic's pricing |
+| `display` | Uses the `costUSD` field from JSONL entries (Claude Code's own estimate) |
+| `compare` | Shows both calculated and display costs side by side |
+
+```bash
+cctrack daily --mode display    # Use Claude Code's cost estimates
+cctrack daily --mode compare    # Compare both methods
+```
+
 ## Terminal Output Examples
 
 **Daily breakdown:**
@@ -144,6 +258,33 @@ $ cctrack statusline
 $58.30 today │ opus-4.6 │ 99.9M tok │ █████░░░ 52% 5h (2h 15m)
 ```
 
+**ROI analysis:**
+
+```
+$ cctrack roi --plan max5
+
+ROI Analysis (max5 plan)
+────────────────────────
+Total tokens:      258.0M
+API equivalent:    $150.75
+Subscription:      $100.00/mo
+Savings:           $50.75 (33.7%)
+Projected monthly: $2261.25
+```
+
+**Blocks view:**
+
+```
+$ cctrack blocks
+
+┌───────────────────┬──────────┬──────────┬────────┐
+│ Window            │ Requests │   Tokens │   Cost │
+├───────────────────┼──────────┼──────────┼────────┤
+│ 10:00 — 15:00     │      142 │   48.2M  │ $28.10 │
+│ 15:00 — 20:00     │       98 │   31.5M  │ $18.40 │
+└───────────────────┴──────────┴──────────┴────────┘
+```
+
 ## Options
 
 Most commands accept these flags:
@@ -179,6 +320,23 @@ Daily Budget: ████████████░░░░░░░░ 62% (
 | Warning | 50 -- 80% | Yellow |
 | Critical | 80 -- 100% | Red |
 | Exceeded | > 100% | Red (flashing) |
+
+## Pricing
+
+cctrack maintains accurate per-token pricing for all 14 Anthropic models:
+
+```bash
+cctrack pricing list           # View all model prices
+cctrack pricing status         # Check pricing source and freshness
+cctrack pricing list --json    # Machine-readable pricing data
+```
+
+Pricing works in two tiers:
+
+- **Standard rate** -- Applied to the first 200K input tokens per request
+- **Tiered rate** -- Applied to input tokens beyond 200K (typically discounted)
+
+Prices are fetched from Anthropic's public pricing page and cached locally at `~/.cctrack/pricing.json` (refreshed every 24 hours). If the fetch fails, cctrack falls back to bundled pricing data shipped with the package.
 
 ## How It Works
 
