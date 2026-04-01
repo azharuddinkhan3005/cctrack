@@ -1,6 +1,8 @@
 # cctrack
 
+[![CI](https://github.com/azharuddinkhan3005/cctrack/actions/workflows/ci.yml/badge.svg)](https://github.com/azharuddinkhan3005/cctrack/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/cctrackr)](https://www.npmjs.com/package/cctrackr)
+[![downloads](https://img.shields.io/npm/dw/cctrackr)](https://www.npmjs.com/package/cctrackr)
 [![license](https://img.shields.io/npm/l/cctrackr)](https://github.com/azharuddinkhan3005/cctrack/blob/main/LICENSE)
 [![node](https://img.shields.io/node/v/cctrackr)](https://nodejs.org)
 
