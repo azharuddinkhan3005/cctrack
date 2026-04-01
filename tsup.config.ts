@@ -6,9 +6,10 @@ export default defineConfig({
   target: 'node20',
   outDir: 'dist',
   clean: true,
-  sourcemap: true,
+  sourcemap: false,
   dts: false,
-  minify: true,
+  minify: false,
+  treeshake: true,
   splitting: false,
   banner: {
     js: '#!/usr/bin/env node',
