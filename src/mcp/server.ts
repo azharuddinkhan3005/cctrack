@@ -186,7 +186,7 @@ export function createMcpServer(): McpServer {
     {},
     async () => {
       const { entries } = await loadData();
-      const burnRate = calculateBurnRate(entries);
+      const burnRate = calculateBurnRate(entries, 'calculate');
       return { content: [{ type: 'text' as const, text: JSON.stringify({ burn_rate: burnRate }, null, 2) }] };
     },
   );
