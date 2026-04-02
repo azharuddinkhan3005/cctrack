@@ -1,7 +1,10 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: {
+    index: 'src/index.ts',
+    'mcp/index': 'src/mcp/index.ts',
+  },
   format: ['esm'],
   target: 'node20',
   outDir: 'dist',
@@ -10,8 +13,5 @@ export default defineConfig({
   dts: false,
   minify: false,
   treeshake: true,
-  splitting: false,
-  banner: {
-    js: '#!/usr/bin/env node',
-  },
+  splitting: true,
 });

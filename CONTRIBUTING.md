@@ -33,9 +33,11 @@ node dist/index.js dashboard
 ```
 src/
   core/         Engine: parser, dedup, pricing, calculator, aggregator,
-                burnrate, budget, rate-model, types
-  commands/     12 CLI commands (daily, monthly, session, blocks, dashboard,
-                export, roi, live, statusline, pricing, config, limits)
+                burnrate, budget, rate-model, cache, data-pipeline,
+                hierarchy, types
+  commands/     13 CLI commands (daily, monthly, session, blocks, dashboard,
+                export, roi, live, statusline, pricing, config, limits, mcp)
+  mcp/          MCP server: server.ts (tool handlers), index.ts (entry point)
   utils/        Helpers: fs (project resolution), format (cost/tokens/csv),
                 date (timezone)
 pricing/        Bundled Anthropic model pricing data
@@ -47,9 +49,10 @@ tests/          Playwright E2E tests for the dashboard
 1. **Parse** — Read JSONL files from `~/.claude/projects/`, validate with Zod, skip non-usage entries
 2. **Deduplicate** — requestId > messageId > content hash (3-tier)
 3. **Resolve projects** — Map file paths to project names via filesystem directory structure
-4. **Calculate costs** — Tiered pricing at 200K token threshold, per-model rates
-5. **Aggregate** — Single-pass into daily/monthly/session/project/model views
-6. **Render** — Terminal tables, JSON, CSV, or interactive HTML dashboard
+4. **Calculate costs** — Tiered pricing at 200K token threshold, per-model rates, pricing snapshots
+5. **Cache** — Save parsed entries to `~/.cctrackr/history/` for data preservation
+6. **Aggregate** — Single-pass into daily/monthly/session/project/model views
+7. **Render** — Terminal tables, JSON, CSV, MCP, or interactive HTML dashboard
 
 ## Making Changes
 
@@ -67,6 +70,8 @@ tests/          Playwright E2E tests for the dashboard
 - Follow existing code patterns (ESM imports, in-source vitest tests)
 - Use `formatCost`, `formatTokens`, `shortenModelName` from `utils/format.ts` for consistency
 - Use `parseCostMode` for any command that accepts `--mode`
+- Use `loadData()` from `core/data-pipeline.ts` for data loading (not raw parse/dedup)
+- When adding MCP tools, add handler in `src/mcp/server.ts` and tests in `src/mcp/server-handlers.test.ts`
 - Run the full test suite before submitting
 
 ## Reporting Issues

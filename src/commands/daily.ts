@@ -2,9 +2,7 @@ import type { Command } from 'commander';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import type { CostMode, DailyAggregate } from '../core/types.js';
-import { getProjectDirs, findJsonlFiles } from '../utils/fs.js';
-import { parseAllFiles } from '../core/parser.js';
-import { deduplicateEntries } from '../core/dedup.js';
+import { loadData } from '../core/data-pipeline.js';
 import { filterEntries, aggregateDaily } from '../core/aggregator.js';
 import { formatCost, formatTokens, parseCostMode } from '../utils/format.js';
 import { loadBudgetConfig, calculateBudgetStatus, formatBudgetBar } from '../core/budget.js';
@@ -146,10 +144,7 @@ export function registerDailyCommand(program: Command): void {
     .option('--mode <mode>', 'Cost mode: calculate|display|compare', 'calculate')
     .option('--timezone <tz>', 'Timezone for date grouping (e.g. America/New_York)')
     .action(async (opts) => {
-      const dirs = getProjectDirs();
-      const files = findJsonlFiles(dirs);
-      const { entries } = await parseAllFiles(files);
-      const unique = deduplicateEntries(entries);
+      const { entries: unique } = await loadData({ since: opts.since, until: opts.until });
       const filtered = filterEntries(unique, {
         since: opts.since,
         until: opts.until,

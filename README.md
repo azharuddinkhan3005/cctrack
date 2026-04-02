@@ -30,6 +30,11 @@ cctrack reads Claude Code's local usage logs and turns them into actionable anal
 - **Rate limit intelligence** -- Tracks billable tokens (input + cache_creation only, NOT cache_read) and includes an EMA-based predictive model.
 - **Multiple output formats** -- `--json` on all commands, `--csv` on daily/monthly/session for spreadsheet export.
 - **Statusline integration** -- One-line output designed for tmux status bars and editor integrations, with optional stdin rate limit data from Claude Code.
+- **Session Detail View** -- Drill into any session to see per-request cost breakdown with model, token counts, and timing.
+- **Agent/Subagent Hierarchy** -- See all subagents spawned in a session with their type and description.
+- **Data Preservation** -- Automatic caching survives Claude Code's 30-day log deletion. Your historical data is never lost.
+- **Pricing Snapshots** -- Historical costs stay accurate even after Anthropic changes their prices.
+- **MCP Server** -- Claude Desktop integration via Model Context Protocol with 7 tools for querying usage data.
 - **Zero data collection** -- All processing is local. No telemetry, no server, no account required.
 
 ## Quick Start
@@ -118,6 +123,7 @@ Compares your projected monthly cost against Pro, Max 5x, and Max 20x subscripti
 | `cctrackr daily` | Daily usage breakdown with cost sparklines |
 | `cctrackr monthly` | Monthly aggregated view |
 | `cctrackr session` | Per-session breakdown with project and model |
+| `cctrackr session <id>` | Per-request detail for a specific session |
 | `cctrackr blocks` | Usage grouped by 5-hour windows |
 | `cctrackr roi` | ROI analysis vs subscription plans |
 | `cctrackr live` | Real-time terminal monitor with burn rate |
@@ -126,6 +132,7 @@ Compares your projected monthly cost against Pro, Max 5x, and Max 20x subscripti
 | `cctrackr export csv` | Export per-request data as CSV |
 | `cctrackr export json` | Export structured JSON |
 | `cctrackr pricing list` | View all model prices |
+| `cctrackr mcp` | Start MCP server for Claude Desktop |
 | `cctrackr config` | Manage budgets and settings |
 
 ## Command Details
@@ -175,6 +182,54 @@ cctrackr blocks                       # Current window and recent history
 cctrackr blocks --json                # Machine-readable output
 cctrackr blocks --live                # Auto-refresh every 5 seconds
 cctrackr blocks --since 2026-03-25    # Filter by date range
+```
+
+### `cctrackr session <id>`
+
+Drill into a specific session to see every request with its model, token breakdown, and cost. Useful for understanding exactly where spend went within a long session.
+
+```bash
+cctrackr session a1b2c3d4              # Per-request detail for session
+cctrackr session a1b2c3d4 --hierarchy  # Show agent/subagent hierarchy
+cctrackr session a1b2c3d4 --json       # Machine-readable output
+cctrackr session a1b2c3d4 --limit 500  # Show up to 500 requests (default: 100)
+```
+
+### `cctrackr mcp`
+
+Starts an MCP (Model Context Protocol) server so Claude Desktop can query your usage data directly. The server exposes 7 tools:
+
+- `get_daily_usage` -- Daily cost and token breakdown
+- `get_session_list` -- All sessions with cost summary
+- `get_session_detail` -- Per-request detail for a session
+- `get_budget_status` -- Current daily/monthly budget status
+- `get_roi_analysis` -- ROI comparison against subscription plans
+- `get_rate_limits` -- Burn rate and rate limit predictions
+- `get_dashboard_data` -- Complete dashboard dataset with all aggregations
+
+**Claude Desktop config** (using global install):
+
+```json
+{
+  "mcpServers": {
+    "cctrackr": {
+      "command": "cctrackr-mcp"
+    }
+  }
+}
+```
+
+**Claude Desktop config** (using npx):
+
+```json
+{
+  "mcpServers": {
+    "cctrackr": {
+      "command": "npx",
+      "args": ["cctrackr@latest", "mcp"]
+    }
+  }
+}
 ```
 
 ### `cctrackr limits`
@@ -269,6 +324,48 @@ $ cctrackr session
 2 sessions, 815 requests, 258.0M tokens, $150.75
 ```
 
+**Session detail:**
+
+```
+$ cctrackr session a1b2c3d4
+
+Session: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+Project: my-app
+Model: opus-4.6
+Duration: 18h 30m
+Total: 210.5M tokens, $122.40
+
+┌──────────┬──────────┬───────┬────────┬─────────┬─────────┬─────────┐
+│ Time     │ Model    │ Input │ Output │ Cache W │ Cache R │    Cost │
+├──────────┼──────────┼───────┼────────┼─────────┼─────────┼─────────┤
+│ 09:15:32 │ opus-4.6 │  1.2K │   3.4K │    180K │     12M │   $0.19 │
+│ 09:16:01 │ opus-4.6 │  0.8K │   2.1K │     95K │     12M │   $0.12 │
+│ 09:17:45 │ opus-4.6 │  2.3K │   4.2K │    128K │     12M │   $0.16 │
+└──────────┴──────────┴───────┴────────┴─────────┴─────────┴─────────┘
+Showing 3 of 620 requests. Use --limit to show more.
+```
+
+**Agent hierarchy:**
+
+```
+$ cctrackr session a1b2c3d4 --hierarchy
+
+Session: a1b2c3d4-e5f6-...
+Project: my-app
+Total: 210.5M tokens, $122.40, 620 requests
+
+┌──────────────────┬─────────────────┬──────────────────────────┬──────────┬────────┬─────────┬────────────┐
+│ Agent            │ Type            │ Description              │ Requests │ Tokens │    Cost │ % of Total │
+├──────────────────┼─────────────────┼──────────────────────────┼──────────┼────────┼─────────┼────────────┤
+│ (parent session) │                 │                          │      620 │ 210.5M │ $122.40 │     100.0% │
+│ b2c3d4e5f6a7b... │ code-reviewer   │ Review auth module       │        0 │      0 │   $0.00 │       0.0% │
+│ c3d4e5f6a7b8c... │ testing-agent   │ Write integration tests  │        0 │      0 │   $0.00 │       0.0% │
+└──────────────────┴─────────────────┴──────────────────────────┴──────────┴────────┴─────────┴────────────┘
+
+Note: Claude Code logs API usage under the parent session.
+      Per-agent cost attribution is not available from JSONL data.
+```
+
 **Statusline (for tmux or editor status bars):**
 
 ```
@@ -329,6 +426,8 @@ $ cctrackr blocks
 | `--format <tpl>` | statusline | Custom format: `{cost}`, `{model}`, `{tokens}`, `{block_pct}`, `{block_remaining}` |
 | `--no-cache` | statusline | Force fresh parse, skip 30-second cache |
 | `--plan <name>` | roi | Plan to compare: `pro`, `max5`, `max20` (fuzzy: `20`, `100`, `200`, `max`) |
+| `--hierarchy` | session | Show agent/subagent hierarchy for a specific session |
+| `--limit <n>` | session | Max requests in detail view (default: 100) |
 
 ## Budget Alerts
 
@@ -370,15 +469,22 @@ Pricing works in two tiers:
 
 Prices are fetched from Anthropic's public pricing page and cached locally at `~/.cctrack/pricing.json` (refreshed every 24 hours). If the fetch fails, cctrack falls back to bundled pricing data shipped with the package.
 
+Each cost calculation captures the exact rates used at the time, so historical costs remain accurate even after Anthropic changes their prices. Your March data will always reflect March pricing, regardless of what rates are current today.
+
 ## How It Works
 
-cctrack reads Claude Code's JSONL usage logs from `~/.claude/projects/` and processes them in five steps:
+cctrack reads Claude Code's JSONL usage logs from `~/.claude/projects/` and processes them in six steps:
 
 1. **Parse** -- Validates each JSONL entry against a Zod schema, skips non-usage entries
 2. **Deduplicate** -- Removes duplicates using requestId > messageId > content hash (3-tier)
 3. **Resolve projects** -- Maps filesystem paths to project names, handles subagent paths
 4. **Calculate costs** -- Applies Anthropic's per-token pricing with tiered rates at the 200K threshold
-5. **Aggregate** -- Builds daily, monthly, session, and project views in a single pass
+5. **Cache** -- Saves parsed data to `~/.cctrackr/history/` so it survives Claude Code's 30-day log deletion
+6. **Aggregate** -- Builds daily, monthly, session, and project views in a single pass
+
+## Data Preservation
+
+Claude Code deletes JSONL logs after 30 days. cctrack automatically caches parsed usage data to `~/.cctrackr/history/` on every run, so your historical cost and token data survives log deletion. This is completely transparent -- no configuration needed, and all commands use the cache automatically. If you reinstall Claude Code or clean up old logs, your historical usage data remains intact.
 
 ## Known Limitations
 
@@ -399,6 +505,10 @@ Anthropic does not count `cache_read` tokens toward rate limits -- only `input` 
 ### Rate limit prediction is uncalibrated
 
 cctrack includes an EMA-based predictive model for rate limit estimation, but it requires calibration data (actual rate limit events) to be accurate. Most users -- especially those on Max plans -- rarely hit rate limits, so the model will have little or no calibration data. Treat its predictions as rough estimates, not precise forecasts.
+
+### Agent hierarchy cannot attribute per-agent costs
+
+`cctrackr session <id> --hierarchy` shows all subagents spawned in a session with their type and description. However, Claude Code logs all API usage (token counts, costs) in the parent session's JSONL file — subagent JSONL files only contain conversation text. This means per-agent cost attribution is not possible from JSONL data alone. The hierarchy still shows which agents ran and what they did, just not how much each one cost individually.
 
 ### JSONL logs don't capture everything
 
@@ -451,7 +561,7 @@ git clone https://github.com/azharuddinkhan3005/cctrack.git
 cd cctrack
 pnpm install
 pnpm build
-pnpm test           # 280 unit tests
+pnpm test           # 380 unit tests
 pnpm test:e2e       # 14 browser tests
 node dist/index.js daily
 ```

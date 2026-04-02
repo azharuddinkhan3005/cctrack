@@ -1,8 +1,7 @@
 import type { Command } from 'commander';
 import type { CostMode, UsageEntry } from '../core/types.js';
-import { getProjectDirs, findJsonlFiles, extractProjectName } from '../utils/fs.js';
-import { parseAllFiles } from '../core/parser.js';
-import { deduplicateEntries } from '../core/dedup.js';
+import { extractProjectName } from '../utils/fs.js';
+import { loadData } from '../core/data-pipeline.js';
 import { filterEntries, buildDashboardData } from '../core/aggregator.js';
 import { processEntry } from '../core/calculator.js';
 import { csvEscape, parseCostMode } from '../utils/format.js';
@@ -53,10 +52,7 @@ export function registerExportCommand(program: Command): void {
     .option('--mode <mode>', 'Cost mode: calculate, display, compare', 'calculate')
     .option('--timezone <tz>', 'Timezone for filtering')
     .action(async (opts) => {
-      const dirs = getProjectDirs();
-      const files = findJsonlFiles(dirs);
-      const { entries } = await parseAllFiles(files);
-      const unique = deduplicateEntries(entries);
+      const { entries: unique } = await loadData({ since: opts.since, until: opts.until });
       const filtered = filterEntries(unique, {
         since: opts.since,
         until: opts.until,
@@ -80,10 +76,7 @@ export function registerExportCommand(program: Command): void {
     .option('--mode <mode>', 'Cost mode: calculate, display, compare', 'calculate')
     .option('--timezone <tz>', 'Timezone for date grouping')
     .action(async (opts) => {
-      const dirs = getProjectDirs();
-      const files = findJsonlFiles(dirs);
-      const { entries } = await parseAllFiles(files);
-      const unique = deduplicateEntries(entries);
+      const { entries: unique } = await loadData({ since: opts.since, until: opts.until });
       const filtered = filterEntries(unique, {
         since: opts.since,
         until: opts.until,

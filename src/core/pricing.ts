@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { homedir } from 'node:os';
-import type { PricingData, ModelPricing } from './types.js';
+import type { PricingData, ModelPricing, PricingSnapshot } from './types.js';
 
 let pricingData: PricingData | null = null;
 
@@ -310,6 +310,36 @@ export function getModelPricing(modelName: string): ModelPricing | null {
   if (resolved && data.models[resolved]) return data.models[resolved];
 
   return null;
+}
+
+/**
+ * Get the current pricing data version string.
+ */
+export function getPricingVersion(): string {
+  try {
+    return loadPricing().version;
+  } catch {
+    return 'unknown';
+  }
+}
+
+/**
+ * Capture a snapshot of the pricing used for a model at this moment.
+ * Returns null if the model has no known pricing.
+ */
+export function snapshotPricing(modelName: string): PricingSnapshot | null {
+  const pricing = getModelPricing(modelName);
+  if (!pricing) return null;
+  const data = loadPricing();
+  return {
+    model: modelName,
+    input_per_million: pricing.input_cost_per_million,
+    output_per_million: pricing.output_cost_per_million,
+    cache_write_per_million: pricing.cache_creation_cost_per_million,
+    cache_read_per_million: pricing.cache_read_cost_per_million,
+    pricing_version: data.version,
+    captured_at: new Date().toISOString(),
+  };
 }
 
 /**

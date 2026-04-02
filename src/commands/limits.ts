@@ -1,10 +1,7 @@
 import type { Command } from 'commander';
 import chalk from 'chalk';
 import type { CostMode } from '../core/types.js';
-import { getProjectDirs, findJsonlFiles } from '../utils/fs.js';
-import { parseAllFiles } from '../core/parser.js';
-import { deduplicateEntries } from '../core/dedup.js';
-import { filterEntries } from '../core/aggregator.js';
+import { loadData } from '../core/data-pipeline.js';
 import { predictUtilization, loadModel, loadEvents, currentWindowConsumption } from '../core/rate-model.js';
 import { formatTokens, formatDuration, parseCostMode } from '../utils/format.js';
 
@@ -24,10 +21,7 @@ export function registerLimitsCommand(program: Command): void {
     .option('--json', 'Output as JSON')
     .option('--mode <mode>', 'Cost mode', 'calculate')
     .action(async (opts) => {
-      const dirs = getProjectDirs();
-      const files = findJsonlFiles(dirs);
-      const { entries } = await parseAllFiles(files);
-      const unique = deduplicateEntries(entries);
+      const { entries: unique } = await loadData();
 
       const mode = parseCostMode(opts.mode);
 

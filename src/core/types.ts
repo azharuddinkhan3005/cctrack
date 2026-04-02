@@ -47,6 +47,18 @@ export interface PricingData {
   aliases: Record<string, string>;
 }
 
+// === Pricing Snapshot Types ===
+
+export interface PricingSnapshot {
+  model: string;
+  input_per_million: number;
+  output_per_million: number;
+  cache_write_per_million: number;
+  cache_read_per_million: number;
+  pricing_version: string;
+  captured_at: string;
+}
+
 // === Aggregation Types ===
 
 export interface TokenBreakdown {
@@ -218,5 +230,6 @@ export interface DashboardData {
   project_heatmaps?: Record<string, number[][]>;
   burn_rate?: BurnRate;
   blocks?: BlockAggregate[];
+  pricing_version?: string;
   budget?: BudgetStatus;
 }

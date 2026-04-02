@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-04-02
+
+### Added
+
+- **Session Detail View** -- `cctrackr session <id>` drills into a specific session showing per-request breakdown with timestamp, model, tokens, and cost. Supports prefix matching and `--limit`.
+- **Agent/Subagent Hierarchy** -- `cctrackr session <id> --hierarchy` shows all subagents spawned in a session with their type and description.
+- **Data Preservation** -- Parsed entries automatically cached to `~/.cctrackr/history/`. Survives Claude Code's 30-day log deletion. Transparent to all commands.
+- **Pricing Snapshots** -- Cost calculations capture the exact rates used, so historical costs stay accurate after price changes.
+- **MCP Server** -- `cctrackr mcp` starts a Model Context Protocol server for Claude Desktop integration. 7 tools covering daily usage, sessions, budgets, ROI, rate limits, and dashboard data.
+- **Dashboard: Model Breakdown** -- Hover the multi-model badge to see per-model tokens, cost, and percentage.
+- **Dashboard: Session Tooltips** -- Full session ID on hover with one-click copy.
+- **Dashboard: Sort Indicators** -- Column headers show sort direction arrows.
+- **Dashboard: Pricing Version** -- Footer shows which pricing data was used for calculations.
+
+### Improved
+
+- **Security** -- XSS hardening (quote escaping), symlink guard in filesystem walker, atomic cache writes, `pnpm audit` in CI, `.npmrc ignore-scripts`.
+- **Dashboard Responsiveness** -- ResizeObserver ensures charts adapt when viewport changes without refresh.
+- **Heatmap** -- Capped cell sizes for consistent proportions. Empty cells visible in dark mode.
+- **Unified Data Pipeline** -- All commands refactored to use shared `loadData()` with cache integration.
+
+### Changed
+
+- New runtime dependency: `@modelcontextprotocol/sdk` (5 total production deps).
+- 380 unit tests across 26 test files + 14 E2E tests.
+- `test-helpers` excluded from published npm package.
+
 ## [0.1.0] - 2026-03-27
 
 ### Added

@@ -3,8 +3,7 @@ import { statSync } from 'node:fs';
 import chalk from 'chalk';
 import type { CostMode } from '../core/types.js';
 import { getProjectDirs, findJsonlFiles } from '../utils/fs.js';
-import { parseAllFiles } from '../core/parser.js';
-import { deduplicateEntries } from '../core/dedup.js';
+import { loadData } from '../core/data-pipeline.js';
 import { filterEntries, aggregateDaily, aggregateSessions } from '../core/aggregator.js';
 import { formatCost, formatTokens, formatDuration, parseCostMode } from '../utils/format.js';
 import { calculateBurnRate } from '../core/burnrate.js';
@@ -23,10 +22,8 @@ async function loadAndDisplay(mode: CostMode, project?: string, timezone?: strin
     return;
   }
 
-  const { entries, errors } = await parseAllFiles(files);
-  const unique = deduplicateEntries(entries);
-
   const today = new Date().toISOString().slice(0, 10);
+  const { entries: unique, errors } = await loadData({ since: today });
   const filtered = filterEntries(unique, { since: today, project, timezone });
 
   clearScreen();

@@ -10,6 +10,7 @@ import type {
   DashboardData,
 } from './types.js';
 import { processEntry, emptyTokens, emptyCost, addTokens, addCosts } from './calculator.js';
+import { getPricingVersion } from './pricing.js';
 import { toDateString, toMonthString, getHourAndDay, isInRange } from '../utils/date.js';
 import { extractProjectName } from '../utils/fs.js';
 
@@ -309,6 +310,7 @@ export function buildDashboardData(
     models: modelMap,
     heatmap,
     project_heatmaps: projectHeatmaps,
+    pricing_version: getPricingVersion(),
   };
 }
 

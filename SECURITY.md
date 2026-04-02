@@ -4,6 +4,7 @@
 
 | Version | Supported |
 |---|---|
+| 0.2.x | Yes |
 | 0.1.x | Yes |
 
 ## Reporting a Vulnerability
@@ -25,7 +26,10 @@ If you discover a security vulnerability in cctrack, please report it responsibl
 - **Unminified bundle** -- Published code is readable and auditable. We do not ship minified code.
 - **npm provenance** -- Every release includes SLSA v1 provenance via GitHub Actions, verifiable on npm.
 - **Trusted Publishing** -- Publishes via OIDC (no stored npm tokens). Prevents token theft attacks.
-- **Minimal dependencies** -- 4 runtime deps (chalk, cli-table3, commander, zod). No transitive surprises.
+- **Minimal dependencies** -- 5 runtime deps (chalk, cli-table3, commander, zod, @modelcontextprotocol/sdk). The MCP SDK's HTTP-related transitive deps are unused — cctrackr only uses the stdio transport.
+- **Symlink protection** -- Filesystem walkers skip symbolic links to prevent directory traversal.
+- **XSS-hardened dashboard** -- Data embedded via double-encoded JSON; all user strings escaped with full HTML entity encoding (including quotes).
+- **MCP server uses stdio only** -- No network-facing HTTP server. No DNS rebinding surface.
 
 ## Supply Chain
 

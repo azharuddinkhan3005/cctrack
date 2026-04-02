@@ -1,11 +1,12 @@
-import type { UsageEntry, CostBreakdown, TokenBreakdown, CostMode } from './types.js';
-import { calculateEntryCost } from './pricing.js';
+import type { UsageEntry, CostBreakdown, TokenBreakdown, CostMode, PricingSnapshot } from './types.js';
+import { calculateEntryCost, snapshotPricing } from './pricing.js';
 
 export interface EntryResult {
   tokens: TokenBreakdown;
   cost: CostBreakdown;
   calculatedCost: CostBreakdown;
   displayCost: number | undefined;
+  pricingSnapshot: PricingSnapshot | null;
 }
 
 /**
@@ -70,6 +71,7 @@ export function processEntry(entry: UsageEntry, mode: CostMode = 'calculate'): E
     cost,
     calculatedCost,
     displayCost: entry.costUSD,
+    pricingSnapshot: snapshotPricing(model),
   };
 }
 
@@ -185,6 +187,29 @@ if (import.meta.vitest) {
       const result = processEntry(entry, 'compare');
       expect(result.calculatedCost.total_cost).toBeGreaterThan(0);
       expect(result.displayCost).toBe(0.42);
+    });
+
+    it('attaches pricing snapshot for known models', () => {
+      const result = processEntry(makeEntry());
+      expect(result.pricingSnapshot).not.toBeNull();
+      expect(result.pricingSnapshot!.model).toBe('claude-sonnet-4-20250514');
+      expect(result.pricingSnapshot!.input_per_million).toBe(3.0);
+      expect(result.pricingSnapshot!.output_per_million).toBe(15.0);
+      expect(result.pricingSnapshot!.cache_write_per_million).toBe(3.75);
+      expect(result.pricingSnapshot!.cache_read_per_million).toBe(0.30);
+      expect(result.pricingSnapshot!.pricing_version).toBe('test');
+      expect(result.pricingSnapshot!.captured_at).toBeTruthy();
+    });
+
+    it('returns null pricing snapshot for unknown models', () => {
+      const entry = makeEntry({
+        message: {
+          model: 'unknown-model-xyz',
+          usage: { input_tokens: 100, output_tokens: 50, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 },
+        },
+      });
+      const result = processEntry(entry);
+      expect(result.pricingSnapshot).toBeNull();
     });
   });
 

@@ -3,9 +3,7 @@ import chalk from 'chalk';
 import Table from 'cli-table3';
 import type { CostMode, UsageEntry, BlockAggregate, AggregatedEntry } from '../core/types.js';
 import { BLOCK_DURATION_MS } from '../core/types.js';
-import { getProjectDirs, findJsonlFiles } from '../utils/fs.js';
-import { parseAllFiles } from '../core/parser.js';
-import { deduplicateEntries } from '../core/dedup.js';
+import { loadData } from '../core/data-pipeline.js';
 import { filterEntries, emptyAggregate, accumulate } from '../core/aggregator.js';
 import { processEntry, addTokens, addCosts } from '../core/calculator.js';
 import { formatCost, formatTokens, formatDuration, parseCostMode } from '../utils/format.js';
@@ -167,16 +165,13 @@ function displayBlocks(blocks: BlockAggregate[]): void {
 }
 
 async function loadAndDisplay(mode: CostMode, opts: { since?: string; until?: string; project?: string }): Promise<void> {
-  const dirs = getProjectDirs();
-  const files = findJsonlFiles(dirs);
+  const { entries: unique } = await loadData({ since: opts.since, until: opts.until });
 
-  if (files.length === 0) {
+  if (unique.length === 0) {
     console.log(chalk.yellow('No JSONL files found. Waiting for data...'));
     return;
   }
 
-  const { entries } = await parseAllFiles(files);
-  const unique = deduplicateEntries(entries);
   const filtered = filterEntries(unique, {
     since: opts.since,
     until: opts.until,
@@ -201,10 +196,7 @@ export function registerBlocksCommand(program: Command): void {
       const mode = parseCostMode(opts.mode);
 
       if (opts.json) {
-        const dirs = getProjectDirs();
-        const files = findJsonlFiles(dirs);
-        const { entries } = await parseAllFiles(files);
-        const unique = deduplicateEntries(entries);
+        const { entries: unique } = await loadData({ since: opts.since, until: opts.until });
         const filtered = filterEntries(unique, {
           since: opts.since,
           until: opts.until,

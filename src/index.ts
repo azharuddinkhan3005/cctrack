@@ -11,6 +11,7 @@ import { registerConfigCommand } from './commands/config.js';
 import { registerBlocksCommand } from './commands/blocks.js';
 import { registerStatuslineCommand } from './commands/statusline.js';
 import { registerLimitsCommand } from './commands/limits.js';
+import { registerMcpCommand } from './commands/mcp.js';
 import { initPricing } from './core/pricing.js';
 
 // Kick off background pricing refresh (non-blocking)
@@ -21,7 +22,7 @@ const program = new Command();
 program
   .name('cctrackr')
   .description('Claude Code usage analytics — accurate metrics and a beautiful HTML dashboard')
-  .version('0.1.3')
+  .version('0.2.0')
   .addHelpText('after', `
 Examples:
   cctrackr                                    Open interactive HTML dashboard
@@ -45,6 +46,7 @@ registerConfigCommand(program);
 registerBlocksCommand(program);
 registerStatuslineCommand(program);
 registerLimitsCommand(program);
+registerMcpCommand(program);
 
 // Default action: run dashboard
 program.action(async () => {

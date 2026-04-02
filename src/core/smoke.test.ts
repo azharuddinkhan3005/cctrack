@@ -274,4 +274,54 @@ describe('CLI smoke test', { timeout: 30_000 }, () => {
       expect(p.project).not.toContain('>');
     });
   });
+
+  it('session <id> --json returns session detail with requests array', () => {
+    // Use a prefix of the known session ID from fixture data
+    const out = run('session session-abc123 --json');
+    const data = JSON.parse(out);
+    expect(data).toHaveProperty('session');
+    expect(data).toHaveProperty('requests');
+    expect(Array.isArray(data.requests)).toBe(true);
+    expect(data.requests.length).toBeGreaterThan(0);
+    // Each request should have the expected shape
+    const req = data.requests[0];
+    expect(req).toHaveProperty('timestamp');
+    expect(req).toHaveProperty('model');
+    expect(req).toHaveProperty('input_tokens');
+    expect(req).toHaveProperty('output_tokens');
+    expect(req).toHaveProperty('cost');
+    // Session aggregate should have standard fields
+    expect(data.session).toHaveProperty('sessionId');
+    expect(data.session.sessionId).toBe('session-abc123');
+    expect(data.session).toHaveProperty('project');
+    expect(data.session).toHaveProperty('primaryModel');
+  });
+
+  it('session <id> --hierarchy --json returns hierarchy tree', () => {
+    const out = run('session session-abc123 --hierarchy --json');
+    const data = JSON.parse(out);
+    // Should be an AgentNode-shaped object (the root node)
+    expect(data).toHaveProperty('id');
+    expect(data.id).toBe('session-abc123');
+    expect(data).toHaveProperty('type');
+    expect(data.type).toBe('session');
+    expect(data).toHaveProperty('ownTokens');
+    expect(data).toHaveProperty('ownCost');
+    expect(data).toHaveProperty('totalTokens');
+    expect(data).toHaveProperty('totalCost');
+    expect(data).toHaveProperty('requestCount');
+    expect(data).toHaveProperty('children');
+    expect(Array.isArray(data.children)).toBe(true);
+    // No subagents in fixture data, so children should be empty
+    expect(data.children).toHaveLength(0);
+    // totalTokens should equal ownTokens when no children
+    expect(data.totalTokens).toBe(data.ownTokens);
+    expect(data.totalCost).toBe(data.ownCost);
+  });
+
+  it('mcp --help outputs MCP server description', () => {
+    const out = run('mcp --help');
+    expect(out).toContain('MCP');
+    expect(out).toContain('server');
+  });
 });

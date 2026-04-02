@@ -2,9 +2,7 @@ import type { Command } from 'commander';
 import chalk from 'chalk';
 import type { CostMode, SubscriptionPlan } from '../core/types.js';
 import { PLAN_COSTS } from '../core/types.js';
-import { getProjectDirs, findJsonlFiles } from '../utils/fs.js';
-import { parseAllFiles } from '../core/parser.js';
-import { deduplicateEntries } from '../core/dedup.js';
+import { loadData } from '../core/data-pipeline.js';
 import { filterEntries } from '../core/aggregator.js';
 import { processEntry } from '../core/calculator.js';
 import { formatCost, parseCostMode } from '../utils/format.js';
@@ -21,10 +19,7 @@ export function registerRoiCommand(program: Command): void {
     .option('--timezone <tz>', 'Timezone for filtering')
     .option('--json', 'Output as JSON')
     .action(async (opts) => {
-      const dirs = getProjectDirs();
-      const files = findJsonlFiles(dirs);
-      const { entries } = await parseAllFiles(files);
-      const unique = deduplicateEntries(entries);
+      const { entries: unique } = await loadData({ since: opts.since, until: opts.until });
       const filtered = filterEntries(unique, {
         since: opts.since,
         until: opts.until,
