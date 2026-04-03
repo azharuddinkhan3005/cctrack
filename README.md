@@ -18,8 +18,8 @@ cctrack reads Claude Code's local usage logs and turns them into actionable anal
 
 ## Features
 
-- **Accurate cost calculation** -- 3-tier deduplication (requestId > messageId > content hash) eliminates double-counting. Tiered pricing applies Anthropic's rate change at the 200K token threshold.
-- **14 Anthropic models, 24 aliases** -- Covers every Claude model. Dynamic pricing fetches current rates from Anthropic's public page, with bundled fallback if offline.
+- **Accurate cost calculation** -- 3-tier deduplication (requestId > messageId > content hash) eliminates double-counting. Supports both flat-rate pricing (Opus 4.6, Sonnet 4.6) and legacy tiered pricing for older 200K-context models.
+- **15 Anthropic models, 28 aliases** -- Covers every Claude model from Haiku 3 to Opus 4.6. Dynamic pricing fetches current rates from Anthropic's public page, with bundled fallback if offline.
 - **Interactive HTML dashboard** -- 9 chart panels, project/date filters, dark/light mode. Self-contained HTML file you can share or archive.
 - **Per-project breakdown** -- Automatically resolves project names from the filesystem directory structure, including subagent paths that point back to parent projects.
 - **Budget alerts** -- 4-level system (safe / warning / critical / exceeded) with configurable daily and monthly budgets.
@@ -453,7 +453,7 @@ Daily Budget: ████████████░░░░░░░░ 62% (
 
 ## Pricing
 
-cctrack maintains accurate per-token pricing for all 14 Anthropic models:
+cctrack maintains accurate per-token pricing for all 15 Anthropic models:
 
 ```bash
 cctrackr pricing list           # View all model prices
@@ -462,10 +462,7 @@ cctrackr pricing update         # Force-fetch latest prices from Anthropic
 cctrackr pricing list --json    # Machine-readable pricing data
 ```
 
-Pricing works in two tiers:
-
-- **Standard rate** -- Applied to the first 200K input tokens per request
-- **Tiered rate** -- Applied to input tokens beyond 200K (typically discounted)
+Current-generation models (Opus 4.6, Sonnet 4.6) use **flat-rate pricing** across their full 1M context window. Legacy models with 200K context windows (Opus 4.5, Sonnet 4.5, Sonnet 4) have tiered pricing where tokens beyond 200K are billed at a higher rate. cctrackr handles both automatically.
 
 Prices are fetched from Anthropic's public pricing page and cached locally at `~/.cctrack/pricing.json` (refreshed every 24 hours). If the fetch fails, cctrack falls back to bundled pricing data shipped with the package.
 
