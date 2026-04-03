@@ -13,7 +13,7 @@ Know exactly what Claude Code costs you. Accurate token tracking, cost breakdown
 cctrack reads Claude Code's local usage logs and turns them into actionable analytics. It deduplicates requests, applies Anthropic's tiered pricing, and gives you cost breakdowns by day, session, project, and model -- in the terminal or as an interactive HTML dashboard.
 
 <p align="center">
-  <img src="assets/dashboard-hero.png" alt="cctrack dashboard overview" width="100%">
+  <img src="assets/demo.gif" alt="cctrack dashboard demo — dark/light mode, project filtering, 9 chart panels" width="100%">
 </p>
 
 ## Features
