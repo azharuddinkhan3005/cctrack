@@ -140,6 +140,7 @@ function findJsonlFilesSync(dirs: string[]): string[] {
     try {
       const entries = readdirSync(dir, { withFileTypes: true });
       for (const entry of entries) {
+        if (entry.isSymbolicLink()) continue; // Skip symlinks to prevent traversal
         const fullPath = join(dir, entry.name);
         if (entry.isDirectory()) {
           walk(fullPath);

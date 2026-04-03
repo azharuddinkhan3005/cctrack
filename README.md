@@ -546,7 +546,7 @@ cctrackr config reset                    # Reset to defaults
 
 ## Privacy
 
-cctrack processes all data locally on your machine. No usage data is ever transmitted to any server. The only network request is an optional fetch of Anthropic's public pricing page to keep model prices current -- no user data is sent.
+cctrack processes all data locally on your machine. No usage data is ever transmitted to any server. Network requests are limited to: (1) an optional fetch of Anthropic's public pricing page to keep model prices current, and (2) the HTML dashboard loads Apache ECharts from the jsdelivr CDN when opened in a browser. No user data is sent in either case.
 
 ## Disclaimer
 
