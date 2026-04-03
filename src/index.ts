@@ -22,7 +22,7 @@ const program = new Command();
 program
   .name('cctrackr')
   .description('Claude Code usage analytics — accurate metrics and a beautiful HTML dashboard')
-  .version('0.2.1')
+  .version('0.2.2')
   .addHelpText('after', `
 Examples:
   cctrackr                                    Open interactive HTML dashboard
