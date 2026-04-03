@@ -568,6 +568,10 @@ node dist/index.js daily
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide.
 
+## Support
+
+If cctrack saves you time or money, consider [sponsoring the project](https://github.com/sponsors/azharuddinkhan3005). It helps fund continued development and new features.
+
 ## License
 
 [MIT](LICENSE)
